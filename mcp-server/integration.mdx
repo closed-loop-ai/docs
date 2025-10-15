@@ -20,88 +20,49 @@ This guide will help you integrate the ClosedLoop MCP Server with your AI client
 3. Copy the 64-character API key
 4. Store it securely (environment variable recommended)
 
-## 🔧 Client Configuration
+## 🔧 MCP Server Access
 
-### **Claude Desktop**
+The ClosedLoop MCP Server is deployed as a standalone service and can be accessed via HTTP MCP protocol.
 
-#### 1. Open Claude Desktop Settings
-- Click the gear icon in Claude Desktop
-- Select "Settings"
+### **Server Information**
+- **Server URL**: `https://mcp.closedloop.sh`
+- **Protocol**: HTTP MCP (JSON-RPC 2.0)
+- **Authentication**: Bearer token (API key) in Authorization header
 
-#### 2. Add MCP Server Configuration
-```json
-{
-  "mcpServers": {
-    "closedloop": {
-      "command": "npx",
-      "args": ["@closedloop-ai/mcp-server"],
-      "env": {
-        "CLOSEDLOOP_API_KEY": "your-api-key-here"
+### **Available Endpoints**
+- **MCP Protocol**: `POST https://mcp.closedloop.sh/`
+- **Health Check**: `GET https://mcp.closedloop.sh/health`
+
+### **MCP Protocol Usage**
+
+#### List Available Tools
+```bash
+curl -X POST https://mcp.closedloop.sh/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/list"
+  }'
+```
+
+#### Call a Tool
+```bash
+curl -X POST https://mcp.closedloop.sh/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "list_feedbacks",
+      "arguments": {
+        "limit": 10
       }
     }
-  }
-}
-```
-
-#### 3. Restart Claude Desktop
-- Close and reopen Claude Desktop
-- The MCP server will be available in your conversations
-
-### **Cursor IDE**
-
-#### 1. Open Cursor Settings
-- Go to Settings → Extensions → MCP
-- Or edit your MCP configuration file
-
-#### 2. Add MCP Server Configuration
-```json
-{
-  "mcpServers": {
-    "closedloop": {
-      "command": "npx",
-      "args": ["@closedloop-ai/mcp-server"],
-      "env": {
-        "CLOSEDLOOP_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-#### 3. Restart Cursor
-- Reload the window or restart Cursor
-- MCP tools will be available in your AI interactions
-
-### **Custom MCP Client**
-
-#### 1. Install MCP Server Package
-```bash
-npm install @closedloop-ai/mcp-server
-```
-
-#### 2. Configure Environment
-```bash
-export CLOSEDLOOP_API_KEY="your-api-key-here"
-```
-
-#### 3. Connect to Server
-```javascript
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-
-const transport = new StdioClientTransport({
-  command: 'npx',
-  args: ['@closedloop-ai/mcp-server']
-});
-
-const client = new Client({
-  name: 'my-client',
-  version: '1.0.0'
-}, {
-  capabilities: {}
-});
-
-await client.connect(transport);
+  }'
 ```
 
 ## 🔐 Security Configuration
@@ -295,44 +256,20 @@ curl https://mcp.closedloop.sh/health
 - Implement caching where appropriate
 - Monitor rate limits
 
-## 🔗 Advanced Configuration
+## 🔗 Multiple Teams
 
-### **Custom Server URL**
-```json
-{
-  "mcpServers": {
-    "closedloop": {
-      "command": "npx",
-      "args": ["@closedloop-ai/mcp-server"],
-      "env": {
-        "CLOSEDLOOP_API_KEY": "your-api-key",
-        "MCP_SERVER_URL": "https://custom-mcp-server.com"
-      }
-    }
-  }
-}
-```
+To access data from multiple teams, use different API keys for each team:
 
-### **Multiple Teams**
-```json
-{
-  "mcpServers": {
-    "closedloop-team1": {
-      "command": "npx",
-      "args": ["@closedloop-ai/mcp-server"],
-      "env": {
-        "CLOSEDLOOP_API_KEY": "team1-api-key"
-      }
-    },
-    "closedloop-team2": {
-      "command": "npx",
-      "args": ["@closedloop-ai/mcp-server"],
-      "env": {
-        "CLOSEDLOOP_API_KEY": "team2-api-key"
-      }
-    }
-  }
-}
+```bash
+# Team 1
+curl -X POST https://mcp.closedloop.sh/ \
+  -H "Authorization: Bearer TEAM1_API_KEY" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}'
+
+# Team 2  
+curl -X POST https://mcp.closedloop.sh/ \
+  -H "Authorization: Bearer TEAM2_API_KEY" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}'
 ```
 
 ## 📞 Support
