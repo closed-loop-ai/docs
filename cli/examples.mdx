@@ -121,73 +121,14 @@ cl ingest "The new pricing is confusing and we're not sure what we're paying for
 cl feedback --json | jq '.data[] | select(.title | contains("pricing")) | {title, sentiment, business_impact}'
 ```
 
-## 🔧 Automation & Scripts
+## 🔗 Related Resources
 
-For detailed automation scripts and batch processing examples, see the **[Automation Scripts](/cli/scripts)** page.
+For more advanced usage, check out these specialized sections:
 
-### Quick Script Examples
-
-```bash
-# Process feedback file
-./process-feedback.sh feedback.txt customer-123
-
-# Batch process directory
-./batch-process.sh /path/to/feedback/directory
-
-# Generate daily report
-./daily-insights.sh
-```
-
-## 🎨 Integrations
-
-For comprehensive integration examples with Slack, Jira, GitHub, Discord, and more, see the **[Integrations](/cli/integrations)** page.
-
-### Quick Integration Examples
-
-```bash
-# Send insights to Slack
-./slack-insights.sh $SLACK_WEBHOOK_URL
-
-# Create Jira tickets
-./jira-integration.sh $JIRA_URL $JIRA_USER $JIRA_TOKEN
-
-# Send to Discord
-./discord-integration.sh $DISCORD_WEBHOOK_URL
-```
-
-## 📈 Monitoring & Analytics
-
-For comprehensive monitoring, analytics, and alerting examples, see the **[Monitoring & Analytics](/cli/monitoring)** page.
-
-### Quick Monitoring Examples
-
-```bash
-# Track processing performance
-./performance-monitor.sh
-
-# Monitor customer sentiment
-./sentiment-tracker.sh customer-123
-
-# Generate daily dashboard
-./daily-dashboard.sh
-```
-
-## 🎯 Best Practices
-
-For comprehensive best practices covering configuration, data management, automation, security, and more, see the **[Best Practices](/cli/best-practices)** page.
-
-### Quick Best Practices
-
-```bash
-# Use descriptive titles
-cl ingest "Content" --title "Descriptive Title"
-
-# Include rich context
-cl ingest "Content" --customer "customer-123" --name "John Doe" --email "john@company.com"
-
-# Set up monitoring
-echo "0 9 * * * /path/to/daily-insights.sh" | crontab -
-```
+- **[Automation Scripts](/cli/scripts)** - Batch processing, automation workflows, and script examples
+- **[Integrations](/cli/integrations)** - Slack, Jira, GitHub, Discord, and other platform integrations  
+- **[Monitoring & Analytics](/cli/monitoring)** - Performance tracking, sentiment analysis, and dashboards
+- **[Best Practices](/cli/best-practices)** - Configuration, security, and optimization guidelines
 
 <Card
   title="Need More Help?"
