@@ -1,0 +1,410 @@
+---
+title: 'Team Command'
+description: 'Manage team settings and website configuration'
+---
+
+## 👥 Overview
+
+The `cl team` command helps you manage your team's configuration and settings. The most important setting is your product website URL, which helps ClosedLoop AI understand your product context for more accurate feedback analysis.
+
+## 🚀 Basic Usage
+
+### View Current Website
+
+```bash
+# Show current team website
+cl team website
+
+# JSON output
+cl team website --json
+```
+
+### Update Team Website
+
+```bash
+# Set your product website
+cl team website "https://yourproduct.com"
+
+# JSON output
+cl team website "https://yourproduct.com" --json
+```
+
+## 📋 Parameters
+
+<ParamField path="website" type="string">
+  Your product's website URL. Must include protocol (http:// or https://) and domain.
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output results in JSON format for scripting and automation.
+</ParamField>
+
+## 💡 Examples
+
+### Set Product Website
+
+```bash
+# Set your main product website
+cl team website "https://yourproduct.com"
+
+# Set specific feature page
+cl team website "https://yourproduct.com/features"
+
+# Set documentation site
+cl team website "https://docs.yourproduct.com"
+```
+
+**Output:**
+```
+✅ Team website updated successfully
+Website: https://yourproduct.com
+Updated: 2024-01-15T10:30:00Z
+```
+
+### View Current Website
+
+```bash
+cl team website
+```
+
+**Output:**
+```
+🌐 Team Website Configuration
+────────────────────────────────────────────────────────
+Website: https://yourproduct.com
+Updated: 2024-01-15T10:30:00Z
+```
+
+### JSON Output
+
+```bash
+cl team website --json
+```
+
+**Output:**
+```json
+{
+  "success": true,
+  "data": {
+    "website": "https://yourproduct.com",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## 🎯 Why Set Your Product Website?
+
+<Warning>
+**This is important!** ClosedLoop AI uses your product website URL to understand your product context, which enables more accurate feedback analysis and insights.
+</Warning>
+
+### How It Helps AI Analysis
+
+When you set your product website, ClosedLoop AI can:
+
+- **Learn about your product features** from your website content
+- **Understand your competitors** and market positioning
+- **Analyze pricing and value propositions**
+- **Provide product-specific insights** instead of generic feedback
+- **Better categorize feedback** by feature area
+
+### Examples
+
+```bash
+# For a SaaS product
+cl team website "https://yourproduct.com"
+
+# For a mobile app
+cl team website "https://yourproduct.com/app"
+
+# For a specific feature
+cl team website "https://yourproduct.com/features/analytics"
+
+# For an e-commerce platform
+cl team website "https://yourstore.com"
+```
+
+## 📊 Output Formats
+
+### Standard Format
+
+```
+🌐 Team Website Configuration
+────────────────────────────────────────────────────────
+Website: https://yourproduct.com
+Updated: 2024-01-15T10:30:00Z
+```
+
+### JSON Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "website": "https://yourproduct.com",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## 🔍 Advanced Usage
+
+### Website Validation
+
+The CLI automatically validates website URLs:
+
+```bash
+# Valid URLs
+cl team website "https://yourproduct.com"        # ✅ Valid
+cl team website "http://yourproduct.com"         # ✅ Valid
+cl team website "https://yourproduct.com/features" # ✅ Valid
+
+# Invalid URLs
+cl team website "yourproduct.com"                # ❌ Missing protocol
+cl team website "ftp://yourproduct.com"          # ❌ Invalid protocol
+cl team website "not-a-url"                      # ❌ Invalid format
+```
+
+### Configuration Management
+
+```bash
+#!/bin/bash
+# update-website.sh
+
+NEW_WEBSITE="$1"
+
+if [ -z "$NEW_WEBSITE" ]; then
+  echo "Usage: $0 <website-url>"
+  exit 1
+fi
+
+# Update website
+cl team website "$NEW_WEBSITE"
+
+# Verify update
+CURRENT_WEBSITE=$(cl team website --json | jq -r '.data.website')
+echo "Website updated to: $CURRENT_WEBSITE"
+```
+
+### Environment-Specific Configuration
+
+```bash
+#!/bin/bash
+# setup-environment.sh
+
+ENVIRONMENT="$1"
+
+case $ENVIRONMENT in
+  "development")
+    cl team website "https://dev.yourproduct.com"
+    ;;
+  "staging")
+    cl team website "https://staging.yourproduct.com"
+    ;;
+  "production")
+    cl team website "https://yourproduct.com"
+    ;;
+  *)
+    echo "Usage: $0 <development|staging|production>"
+    exit 1
+    ;;
+esac
+
+echo "Website configured for $ENVIRONMENT environment"
+```
+
+## 🔗 Integration Examples
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy and Configure
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy to production
+        run: |
+          # Your deployment commands here
+          
+      - name: Update ClosedLoop website
+        run: |
+          cl team website "https://yourproduct.com"
+        env:
+          CLOSEDLOOP_API_KEY: ${{ secrets.CLOSEDLOOP_API_KEY }}
+```
+
+### Docker Integration
+
+```dockerfile
+# Dockerfile
+FROM node:16-alpine
+
+# Install ClosedLoop CLI
+RUN npm install -g @closedloop-ai/cli
+
+# Set up configuration
+COPY setup-cli.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/setup-cli.sh
+
+# Configure website on container start
+CMD ["/usr/local/bin/setup-cli.sh"]
+```
+
+```bash
+#!/bin/bash
+# setup-cli.sh
+
+# Set website based on environment
+if [ "$ENVIRONMENT" = "production" ]; then
+  cl team website "https://yourproduct.com"
+elif [ "$ENVIRONMENT" = "staging" ]; then
+  cl team website "https://staging.yourproduct.com"
+else
+  cl team website "https://dev.yourproduct.com"
+fi
+
+# Start your application
+exec "$@"
+```
+
+### Multi-Product Setup
+
+```bash
+#!/bin/bash
+# setup-multi-product.sh
+
+PRODUCT="$1"
+
+case $PRODUCT in
+  "main")
+    cl team website "https://yourproduct.com"
+    ;;
+  "mobile")
+    cl team website "https://yourproduct.com/mobile"
+    ;;
+  "enterprise")
+    cl team website "https://enterprise.yourproduct.com"
+    ;;
+  *)
+    echo "Usage: $0 <main|mobile|enterprise>"
+    exit 1
+    ;;
+esac
+
+echo "Website configured for $PRODUCT product"
+```
+
+## ❌ Error Handling
+
+### Common Errors
+
+<Error>
+**Invalid Website URL**
+```
+❌ Validation Error: Invalid website URL format. Must include protocol (http:// or https://) and domain
+```
+**Solution**: Ensure URL includes protocol and valid domain.
+</Error>
+
+<Error>
+**API Key Missing**
+```
+🔑 No API key configured!
+```
+**Solution**: Run `cl config set --api-key <your-key>`.
+</Error>
+
+<Error>
+**Invalid API Key**
+```
+❌ Invalid API key. Get your free API key at https://closedloop.sh
+```
+**Solution**: Get a new API key from your dashboard.
+</Error>
+
+### Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `VALIDATION_ERROR` | Invalid URL format | Include protocol (http:// or https://) |
+| `NO_API_KEY` | No API key configured | Set API key with `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `API_ERROR` | Server error | Check internet connection, try again |
+
+## 🎯 Best Practices
+
+### 1. Use Specific URLs
+
+```bash
+# Good - specific feature page
+cl team website "https://yourproduct.com/features/analytics"
+
+# Also good - main product page
+cl team website "https://yourproduct.com"
+
+# Bad - too generic
+cl team website "https://company.com"
+```
+
+### 2. Update for Different Environments
+
+```bash
+# Good - environment-specific URLs
+cl team website "https://yourproduct.com"           # Production
+cl team website "https://staging.yourproduct.com"   # Staging
+cl team website "https://dev.yourproduct.com"       # Development
+```
+
+### 3. Use JSON for Automation
+
+```bash
+# Good - structured output
+WEBSITE=$(cl team website --json | jq -r '.data.website')
+
+# Bad - parsing text output
+WEBSITE=$(cl team website | grep "Website:" | cut -d' ' -f2)
+```
+
+### 4. Validate Before Setting
+
+```bash
+#!/bin/bash
+# validate-and-set.sh
+
+WEBSITE="$1"
+
+# Basic validation
+if [[ ! "$WEBSITE" =~ ^https?:// ]]; then
+  echo "Error: URL must include protocol (http:// or https://)"
+  exit 1
+fi
+
+# Set website
+cl team website "$WEBSITE"
+
+# Verify
+CURRENT=$(cl team website --json | jq -r '.data.website')
+echo "Website set to: $CURRENT"
+```
+
+## 🔗 Related Commands
+
+- **[Config Command](/cli/commands/config)** - Configure API key
+- **[Ingest Command](/cli/commands/ingest)** - Submit feedback for analysis
+- **[Feedback Command](/cli/commands/feedback)** - View AI-generated insights
+
+<Card
+  title="Ready to Configure Your API Key?"
+  icon="key"
+  href="/cli/commands/config"
+>
+  Learn how to set up and manage your API key configuration
+</Card>

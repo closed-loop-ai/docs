@@ -1,0 +1,435 @@
+---
+title: 'Config Command'
+description: 'Configure API key and manage CLI settings'
+---
+
+## ⚙️ Overview
+
+The `cl config` command manages your CLI configuration, primarily your API key. This is the first command you'll use after installing the CLI to authenticate with ClosedLoop AI services.
+
+## 🚀 Basic Usage
+
+### Set API Key
+
+```bash
+# Set your API key
+cl config set --api-key your-api-key-here
+
+# View current configuration
+cl config
+```
+
+### View Configuration
+
+```bash
+# Show current configuration
+cl config
+
+# JSON output
+cl config --json
+```
+
+## 📋 Parameters
+
+<ParamField path="--api-key" type="string">
+  Your ClosedLoop AI API key. Get it from your dashboard at https://closedloop.sh.
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output results in JSON format for scripting and automation.
+</ParamField>
+
+## 💡 Examples
+
+### Initial Setup
+
+```bash
+# Set your API key (first time setup)
+cl config set --api-key cl_1234567890abcdef
+
+# Verify configuration
+cl config
+```
+
+**Output:**
+```
+⚙️  Configuration:
+────────────────────────────────────────────────────────
+API Key: ✓ Configured
+Config File: /Users/username/.closedloop/config.json
+```
+
+### JSON Output
+
+```bash
+cl config --json
+```
+
+**Output:**
+```json
+{
+  "success": true,
+  "data": {
+    "apiKey": "cl_1234567890abcdef",
+    "configFile": "/Users/username/.closedloop/config.json",
+    "configured": true
+  }
+}
+```
+
+### Environment Variable Alternative
+
+Instead of using the config file, you can set your API key as an environment variable:
+
+```bash
+# Set environment variable
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# CLI will automatically use the environment variable
+cl config
+```
+
+## 🔧 Configuration File
+
+The CLI stores configuration in `~/.closedloop/config.json`:
+
+```json
+{
+  "apiKey": "cl_1234567890abcdef"
+}
+```
+
+### Configuration File Location
+
+| Platform | Path |
+|----------|------|
+| macOS/Linux | `~/.closedloop/config.json` |
+| Windows | `%USERPROFILE%\.closedloop\config.json` |
+
+## 🔍 Advanced Usage
+
+### Configuration Management
+
+```bash
+#!/bin/bash
+# setup-config.sh
+
+API_KEY="$1"
+
+if [ -z "$API_KEY" ]; then
+  echo "Usage: $0 <api-key>"
+  exit 1
+fi
+
+# Set API key
+cl config set --api-key "$API_KEY"
+
+# Verify configuration
+if cl config --json | jq -e '.data.configured' > /dev/null; then
+  echo "✅ Configuration successful"
+else
+  echo "❌ Configuration failed"
+  exit 1
+fi
+```
+
+### Environment-Specific Configuration
+
+```bash
+#!/bin/bash
+# setup-environment.sh
+
+ENVIRONMENT="$1"
+
+case $ENVIRONMENT in
+  "development")
+    export CLOSEDLOOP_API_KEY="dev_api_key_here"
+    ;;
+  "staging")
+    export CLOSEDLOOP_API_KEY="staging_api_key_here"
+    ;;
+  "production")
+    export CLOSEDLOOP_API_KEY="prod_api_key_here"
+    ;;
+  *)
+    echo "Usage: $0 <development|staging|production>"
+    exit 1
+    ;;
+esac
+
+echo "API key configured for $ENVIRONMENT environment"
+```
+
+### Configuration Validation
+
+```bash
+#!/bin/bash
+# validate-config.sh
+
+# Check if API key is configured
+if ! cl config --json | jq -e '.data.configured' > /dev/null; then
+  echo "❌ No API key configured"
+  echo "Run: cl config set --api-key <your-key>"
+  exit 1
+fi
+
+# Test API key by making a simple request
+if cl feedback --json > /dev/null 2>&1; then
+  echo "✅ API key is valid and working"
+else
+  echo "❌ API key is invalid or expired"
+  echo "Get a new key from: https://closedloop.sh"
+  exit 1
+fi
+```
+
+## 🔗 Integration Examples
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/feedback-analysis.yml
+name: Feedback Analysis
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup ClosedLoop CLI
+        run: |
+          npm install -g @closedloop-ai/cli
+          
+      - name: Configure API Key
+        run: |
+          cl config set --api-key ${{ secrets.CLOSEDLOOP_API_KEY }}
+          
+      - name: Analyze Feedback
+        run: |
+          cl feedback --json > insights.json
+          
+      - name: Upload Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: insights
+          path: insights.json
+```
+
+### Docker Integration
+
+```dockerfile
+# Dockerfile
+FROM node:16-alpine
+
+# Install ClosedLoop CLI
+RUN npm install -g @closedloop-ai/cli
+
+# Copy configuration script
+COPY setup-cli.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/setup-cli.sh
+
+# Set up configuration on container start
+CMD ["/usr/local/bin/setup-cli.sh"]
+```
+
+```bash
+#!/bin/bash
+# setup-cli.sh
+
+# Set API key from environment variable
+if [ -n "$CLOSEDLOOP_API_KEY" ]; then
+  cl config set --api-key "$CLOSEDLOOP_API_KEY"
+  echo "✅ API key configured from environment"
+else
+  echo "❌ CLOSEDLOOP_API_KEY environment variable not set"
+  exit 1
+fi
+
+# Start your application
+exec "$@"
+```
+
+### Kubernetes Integration
+
+```yaml
+# k8s-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedback-processor
+  template:
+    metadata:
+      labels:
+        app: feedback-processor
+    spec:
+      containers:
+      - name: feedback-processor
+        image: your-app:latest
+        env:
+        - name: CLOSEDLOOP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: closedloop-secrets
+              key: api-key
+        command: ["/usr/local/bin/setup-cli.sh"]
+```
+
+## 📊 Output Formats
+
+### Standard Format
+
+```
+⚙️  Configuration:
+────────────────────────────────────────────────────────
+API Key: ✓ Configured
+Config File: /Users/username/.closedloop/config.json
+```
+
+### JSON Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "apiKey": "cl_1234567890abcdef",
+    "configFile": "/Users/username/.closedloop/config.json",
+    "configured": true
+  }
+}
+```
+
+## ❌ Error Handling
+
+### Common Errors
+
+<Error>
+**No API Key**
+```
+🔑 No API key configured!
+
+To get started:
+1. Go to https://closedloop.sh
+2. Sign up for a free account
+3. Generate your API key
+4. Run: cl config set --api-key <your-key>
+```
+</Error>
+
+<Error>
+**Invalid API Key**
+```
+❌ Invalid API key. Get your free API key at https://closedloop.sh
+```
+</Error>
+
+<Error>
+**Configuration File Error**
+```
+❌ Error: Cannot write to configuration file
+```
+**Solution**: Check file permissions or use environment variable instead.
+</Error>
+
+### Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `NO_API_KEY` | No API key configured | Run `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `CONFIG_ERROR` | Configuration file error | Check permissions or use environment variable |
+| `API_ERROR` | Server error | Check internet connection, try again |
+
+## 🎯 Best Practices
+
+### 1. Use Environment Variables for CI/CD
+
+```bash
+# Good - for CI/CD pipelines
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# Also good - for local development
+cl config set --api-key "your-api-key-here"
+```
+
+### 2. Validate Configuration
+
+```bash
+# Good - validate before using
+if cl config --json | jq -e '.data.configured' > /dev/null; then
+  echo "Configuration is valid"
+else
+  echo "Configuration is invalid"
+  exit 1
+fi
+```
+
+### 3. Use JSON for Scripting
+
+```bash
+# Good - structured output
+API_KEY=$(cl config --json | jq -r '.data.apiKey')
+
+# Bad - parsing text output
+API_KEY=$(cl config | grep "API Key:" | cut -d' ' -f3)
+```
+
+### 4. Secure API Key Storage
+
+```bash
+# Good - use environment variables in production
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# Also good - use config file for local development
+cl config set --api-key "your-api-key-here"
+
+# Bad - hardcode in scripts
+API_KEY="your-api-key-here"  # Don't do this!
+```
+
+## 🔐 Security Considerations
+
+### API Key Security
+
+- **Never commit API keys** to version control
+- **Use environment variables** in production environments
+- **Rotate API keys** regularly
+- **Use different keys** for different environments
+
+### Configuration File Permissions
+
+```bash
+# Set secure permissions on config file
+chmod 600 ~/.closedloop/config.json
+chown $USER ~/.closedloop/config.json
+```
+
+### Environment Variable Security
+
+```bash
+# Good - set in shell profile
+echo 'export CLOSEDLOOP_API_KEY="your-api-key-here"' >> ~/.bashrc
+
+# Good - use secrets management
+# AWS Secrets Manager, Azure Key Vault, etc.
+```
+
+## 🔗 Related Commands
+
+- **[Team Command](/cli/commands/team)** - Manage team settings
+- **[Ingest Command](/cli/commands/ingest)** - Submit feedback for analysis
+- **[Feedback Command](/cli/commands/feedback)** - View AI-generated insights
+
+<Card
+  title="Ready to Submit Feedback?"
+  icon="upload"
+  href="/cli/commands/ingest"
+>
+  Learn how to submit customer feedback for AI analysis
+</Card>

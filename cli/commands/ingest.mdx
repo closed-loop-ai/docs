@@ -1,0 +1,315 @@
+---
+title: 'Ingest Command'
+description: 'Submit customer feedback for AI analysis and manage ingested data'
+---
+
+## 📥 Overview
+
+The `cl ingest` command is your primary tool for submitting customer feedback to ClosedLoop AI for analysis. It transforms raw customer feedback into structured, actionable insights through AI-powered analysis.
+
+## 🚀 Basic Usage
+
+### Submit Feedback
+
+```bash
+# Basic ingestion
+cl ingest "The app crashes when I try to upload large files"
+
+# With metadata for better analysis
+cl ingest "Great product, love the new features!" \
+  --title "Positive Feedback" \
+  --customer "customer-456" \
+  --name "Jane Smith" \
+  --email "jane@example.com" \
+  --url "https://support.example.com/ticket/789"
+```
+
+### List Ingested Feedback
+
+```bash
+# Show all ingested feedback
+cl ingest
+
+# With pagination
+cl ingest --page 2 --limit 10
+
+# JSON output for scripting
+cl ingest --json
+```
+
+### View Specific Feedback
+
+```bash
+# Show detailed feedback information
+cl ingest 74e3dd87-878f-41cf-8e5a-87527bbf7770
+
+# JSON output
+cl ingest 74e3dd87-878f-41cf-8e5a-87527bbf7770 --json
+```
+
+## 📋 Parameters
+
+<ParamField path="content" type="string" required>
+  Customer feedback content to analyze. Must be at least 10 characters long.
+</ParamField>
+
+<ParamField path="--title" type="string">
+  Descriptive title for the feedback. Helps with organization and search.
+</ParamField>
+
+<ParamField path="--customer" type="string">
+  Customer identifier. Useful for tracking feedback from specific customers.
+</ParamField>
+
+<ParamField path="--name" type="string">
+  Name of the person who provided the feedback.
+</ParamField>
+
+<ParamField path="--email" type="string">
+  Email address of the person who provided the feedback.
+</ParamField>
+
+<ParamField path="--url" type="string">
+  Source URL (support ticket, survey, etc.). Must be a valid URL.
+</ParamField>
+
+<ParamField path="--wait" type="flag">
+  Wait for AI processing to complete before returning. Shows real-time status.
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output results in JSON format for scripting and automation.
+</ParamField>
+
+<ParamField path="--page" type="number">
+  Page number for listing feedback (default: 1).
+</ParamField>
+
+<ParamField path="--limit" type="number">
+  Items per page for listing (max 100, default: 20).
+</ParamField>
+
+<ParamField path="--status" type="string">
+  Filter by processing status: `processing`, `completed`, `failed`, or `all`.
+</ParamField>
+
+<ParamField path="--search" type="string">
+  Search for feedback containing specific text.
+</ParamField>
+
+## 💡 Examples
+
+### Customer Support Ticket
+
+```bash
+cl ingest "The mobile app keeps crashing when I try to upload photos. This is really frustrating and I'm considering switching to a competitor." \
+  --title "Mobile App Crash Issue" \
+  --customer "customer-123" \
+  --name "Sarah Johnson" \
+  --email "sarah@company.com" \
+  --url "https://support.yourcompany.com/ticket/456"
+```
+
+### User Interview Feedback
+
+```bash
+cl ingest "We love the new dashboard design, but the navigation is confusing. It took us 10 minutes to find the settings menu." \
+  --title "Dashboard Navigation Feedback" \
+  --customer "enterprise-456" \
+  --name "Mike Chen" \
+  --email "mike@techcorp.com"
+```
+
+### Survey Response
+
+```bash
+cl ingest "The pricing is too high compared to competitors. We're getting 30% less value for 50% more cost." \
+  --title "Pricing Feedback" \
+  --customer "customer-789" \
+  --name "Lisa Wang" \
+  --email "lisa@startup.com" \
+  --url "https://surveys.company.com/response/123"
+```
+
+### Wait for Processing
+
+```bash
+# Submit and wait for AI analysis
+cl ingest "Customer complaint about slow performance" --wait
+
+# Output shows real-time processing status:
+# ✅ Feedback submitted: 74e3dd87-878f-41cf-8e5a-87527bbf7770
+# ⏳ Processing... (this may take a few minutes)
+# ✅ Analysis complete! View insights with: cl feedback
+```
+
+## 📊 Output Formats
+
+### Table Format (Default)
+
+```
+┌─────────────────────────────────────┬─────────────────────────────┬─────────────┬─────────────┐
+│ ID                                  │ Title                      │ Status      │ Created     │
+├─────────────────────────────────────┼─────────────────────────────┼─────────────┼─────────────┤
+│ 74e3dd87-878f-41cf-8e5a-87527bbf7770 │ Mobile App Crash Issue     │ completed   │ 2024-01-15  │
+│ 2ea8f556-052b-4f5c-bf86-833780b3d00d │ Dashboard Navigation       │ processing  │ 2024-01-15  │
+└─────────────────────────────────────┴─────────────────────────────┴─────────────┴─────────────┘
+```
+
+### JSON Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "74e3dd87-878f-41cf-8e5a-87527bbf7770",
+    "title": "Mobile App Crash Issue",
+    "content": "The mobile app keeps crashing...",
+    "status": "completed",
+    "created_at": "2024-01-15T10:30:00Z",
+    "customer_id": "customer-123",
+    "reporter_name": "Sarah Johnson",
+    "reporter_email": "sarah@company.com",
+    "source_url": "https://support.yourcompany.com/ticket/456"
+  }
+}
+```
+
+## 🔍 Advanced Usage
+
+### Batch Processing
+
+```bash
+#!/bin/bash
+# Process multiple feedback files
+
+for file in feedback/*.txt; do
+  echo "Processing: $(basename "$file")"
+  cl ingest "$(cat "$file")" --title "$(basename "$file" .txt)" --wait
+done
+```
+
+### Filtering and Search
+
+```bash
+# List only completed feedback
+cl ingest --status completed
+
+# Search for specific content
+cl ingest --search "crash"
+
+# Get feedback from specific customer
+cl ingest --json | jq '.data[] | select(.customer_id == "customer-123")'
+```
+
+### Integration with Other Tools
+
+```bash
+# Process support ticket and create Jira issue
+FEEDBACK_ID=$(cl ingest "$TICKET_CONTENT" --customer "$CUSTOMER_ID" --json | jq -r '.id')
+
+# Wait for analysis
+cl ingest "$FEEDBACK_ID" --wait
+
+# Get insights and create Jira ticket
+cl feedback --json | jq '.data[0]' | jq -r '.title' | xargs -I {} jira create --summary "Customer Insight: {}"
+```
+
+## ❌ Error Handling
+
+### Common Errors
+
+<Error>
+**Empty Content**
+```
+❌ Validation Error: Content cannot be empty
+```
+**Solution**: Provide feedback content or use `--file` to read from file.
+</Error>
+
+<Error>
+**Invalid URL**
+```
+❌ Validation Error: Invalid URL format
+```
+**Solution**: Ensure URL includes protocol (http:// or https://).
+</Error>
+
+<Error>
+**API Key Missing**
+```
+🔑 No API key configured!
+```
+**Solution**: Run `cl config set --api-key <your-key>`.
+</Error>
+
+### Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `VALIDATION_ERROR` | Input validation failed | Check content length and URL format |
+| `NO_API_KEY` | No API key configured | Set API key with `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `RATE_LIMITED` | Too many requests | Wait and retry |
+| `API_ERROR` | Server error | Check internet connection, try again |
+
+## 🎯 Best Practices
+
+### 1. Use Descriptive Titles
+
+```bash
+# Good
+cl ingest "App crashes on upload" --title "File Upload Crash - iOS"
+
+# Bad
+cl ingest "App broken" --title "Bug"
+```
+
+### 2. Include Customer Context
+
+```bash
+# Good - rich context
+cl ingest "Feature request" \
+  --customer "enterprise-123" \
+  --name "John Doe" \
+  --email "john@company.com" \
+  --url "https://support.company.com/ticket/456"
+
+# Bad - minimal context
+cl ingest "Feature request"
+```
+
+### 3. Use JSON for Automation
+
+```bash
+# Good - structured output
+FEEDBACK_ID=$(cl ingest "$CONTENT" --json | jq -r '.id')
+
+# Bad - parsing text output
+FEEDBACK_ID=$(cl ingest "$CONTENT" | grep "ID:" | cut -d' ' -f2)
+```
+
+### 4. Handle Processing Status
+
+```bash
+# Good - wait for completion
+cl ingest "$CONTENT" --wait
+
+# Also good - check status later
+ID=$(cl ingest "$CONTENT" --json | jq -r '.id')
+cl ingest "$ID" --status
+```
+
+## 🔗 Related Commands
+
+- **[Feedback Command](/cli/commands/feedback)** - View AI-generated insights
+- **[Team Command](/cli/commands/team)** - Manage team settings
+- **[Config Command](/cli/commands/config)** - Configure API key
+
+<Card
+  title="Ready to View Insights?"
+  icon="chart-line"
+  href="/cli/commands/feedback"
+>
+  Learn how to view and analyze AI-generated insights from your feedback
+</Card>

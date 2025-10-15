@@ -1,0 +1,468 @@
+---
+title: 'Feedback Command'
+description: 'View and analyze AI-generated customer insights'
+---
+
+## 📊 Overview
+
+The `cl feedback` command displays AI-generated insights from your ingested customer feedback. These insights are automatically created by ClosedLoop AI's analysis engine, providing structured, actionable intelligence from raw customer input.
+
+## 🚀 Basic Usage
+
+### List All Insights
+
+```bash
+# Show all AI-generated insights
+cl feedback
+
+# With pagination
+cl feedback --page 2 --limit 5
+
+# JSON output for scripting
+cl feedback --json
+```
+
+### View Specific Insight
+
+```bash
+# Show detailed insight information
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d
+
+# JSON output
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
+```
+
+## 📋 Parameters
+
+<ParamField path="id" type="string">
+  Insight ID for detailed view. If not provided, shows list of all insights.
+</ParamField>
+
+<ParamField path="--page" type="number">
+  Page number for listing insights (default: 1).
+</ParamField>
+
+<ParamField path="--limit" type="number">
+  Items per page for listing (max 100, default: 20).
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output results in JSON format for scripting and automation.
+</ParamField>
+
+<ParamField path="--search" type="string">
+  Search insights by content, title, or other fields.
+</ParamField>
+
+## 💡 Examples
+
+### View All Insights
+
+```bash
+cl feedback
+```
+
+**Output:**
+```
+┌─────────────────────────────────────┬─────────────────────────────┬─────────────┬─────────────┐
+│ ID                                  │ Title                      │ Severity    │ Status      │
+├─────────────────────────────────────┼─────────────────────────────┼─────────────┼─────────────┤
+│ 2ea8f556-052b-4f5c-bf86-833780b3d00d │ Mobile App Performance     │ high        │ open        │
+│ 74e3dd87-878f-41cf-8e5a-87527bbf7770 │ Dashboard UX Issues        │ medium      │ open        │
+│ 1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6 │ Pricing Model Feedback     │ low         │ closed      │
+└─────────────────────────────────────┴─────────────────────────────┴─────────────┴─────────────┘
+```
+
+### View Specific Insight
+
+```bash
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d
+```
+
+**Output:**
+```
+📊 Insight Details
+────────────────────────────────────────────────────────
+ID: 2ea8f556-052b-4f5c-bf86-833780b3d00d
+Title: Mobile App Performance Issues
+Severity: high
+Status: open
+Created: 2024-01-15T10:30:00Z
+
+🎯 AI Analysis:
+• Pain Point: Users experience frequent crashes when uploading files
+• Impact: High - affects core functionality and user retention
+• Workaround: Users currently use web version for file uploads
+• Competitive Gap: Competitors have more stable mobile apps
+• Willingness to Pay: High - users mentioned paying extra for stability
+
+📈 Business Impact:
+• Revenue Risk: Medium-High
+• Customer Satisfaction: Low
+• Feature Priority: Critical
+
+🔗 Source: https://support.company.com/ticket/456
+```
+
+### Search Insights
+
+```bash
+# Search for performance-related insights
+cl feedback --search "performance"
+
+# Search for high-severity issues
+cl feedback --json | jq '.data[] | select(.severity == "high")'
+```
+
+## 📊 Output Formats
+
+### Table Format (Default)
+
+```
+┌─────────────────────────────────────┬─────────────────────────────┬─────────────┬─────────────┬─────────────┐
+│ ID                                  │ Title                      │ Severity    │ Status      │ Created     │
+├─────────────────────────────────────┼─────────────────────────────┼─────────────┼─────────────┼─────────────┤
+│ 2ea8f556-052b-4f5c-bf86-833780b3d00d │ Mobile App Performance     │ high        │ open        │ 2024-01-15  │
+│ 74e3dd87-878f-41cf-8e5a-87527bbf7770 │ Dashboard UX Issues        │ medium      │ open        │ 2024-01-15  │
+└─────────────────────────────────────┴─────────────────────────────┴─────────────┴─────────────┴─────────────┘
+```
+
+### JSON Format
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "2ea8f556-052b-4f5c-bf86-833780b3d00d",
+      "title": "Mobile App Performance Issues",
+      "timestamp": "2024-01-15T10:30:00Z",
+      "severity": "high",
+      "status": "open",
+      "clarity": 0.85,
+      "is_deal_blocker": false,
+      "pain_point": "Users experience frequent crashes when uploading files",
+      "workaround": "Users currently use web version for file uploads",
+      "competitor_gap": "Competitors have more stable mobile apps",
+      "willingness_to_pay": "High - users mentioned paying extra for stability",
+      "use_case": "File upload functionality",
+      "feature_area": "Mobile App",
+      "source_url": "https://support.company.com/ticket/456",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "pages": 1
+  }
+}
+```
+
+## 🔍 Advanced Usage
+
+### Filter by Severity
+
+```bash
+# Get only high-severity insights
+cl feedback --json | jq '.data[] | select(.severity == "high")'
+
+# Get critical issues
+cl feedback --json | jq '.data[] | select(.severity == "critical")'
+```
+
+### Filter by Status
+
+```bash
+# Get only open insights
+cl feedback --json | jq '.data[] | select(.status == "open")'
+
+# Get closed insights
+cl feedback --json | jq '.data[] | select(.status == "closed")'
+```
+
+### Business Impact Analysis
+
+```bash
+# Get insights with high business impact
+cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)'
+
+# Get insights with willingness to pay
+cl feedback --json | jq '.data[] | select(.willingness_to_pay | contains("High"))'
+```
+
+### Competitive Analysis
+
+```bash
+# Get insights mentioning competitors
+cl feedback --json | jq '.data[] | select(.competitor_gap != null)'
+
+# Get insights with competitive gaps
+cl feedback --json | jq '.data[] | select(.competitor_gap | length > 0)'
+```
+
+## 📈 Analytics and Reporting
+
+### Daily Insights Summary
+
+```bash
+#!/bin/bash
+# daily-insights.sh
+
+TODAY=$(date +%Y-%m-%d)
+
+echo "=== Daily Insights Report - $TODAY ==="
+echo
+
+# Get today's insights
+cl feedback --json | jq --arg today "$TODAY" '
+  .data[] | 
+  select(.created_at | startswith($today)) |
+  {
+    title: .title,
+    severity: .severity,
+    status: .status,
+    pain_point: .pain_point
+  }
+' | jq -s 'sort_by(.severity) | reverse'
+
+echo
+echo "=== Summary ==="
+cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today))) |
+  {
+    total: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    by_status: group_by(.status) | map({status: .[0].status, count: length})
+  }
+'
+```
+
+### Customer Impact Analysis
+
+```bash
+#!/bin/bash
+# customer-impact.sh
+
+CUSTOMER_ID="$1"
+
+if [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <customer-id>"
+  exit 1
+fi
+
+echo "=== Customer Impact Analysis: $CUSTOMER_ID ==="
+echo
+
+# Get insights for specific customer
+cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data[] | 
+  select(.customer_id == $customer) |
+  {
+    title: .title,
+    severity: .severity,
+    pain_point: .pain_point,
+    business_impact: .is_deal_blocker,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.severity) | reverse'
+```
+
+### Feature Priority Matrix
+
+```bash
+#!/bin/bash
+# feature-priority.sh
+
+echo "=== Feature Priority Matrix ==="
+echo
+
+# Create priority matrix based on severity and business impact
+cl feedback --json | jq '
+  .data[] | 
+  select(.status == "open") |
+  {
+    title: .title,
+    severity: .severity,
+    business_impact: .is_deal_blocker,
+    priority_score: (
+      if .severity == "critical" then 4
+      elif .severity == "high" then 3
+      elif .severity == "medium" then 2
+      else 1
+      end
+    ) + (
+      if .is_deal_blocker then 2 else 0 end
+    )
+  }
+' | jq -s 'sort_by(.priority_score) | reverse'
+```
+
+## 🔗 Integration Examples
+
+### Slack Integration
+
+```bash
+#!/bin/bash
+# slack-insights.sh
+
+SLACK_WEBHOOK_URL="$1"
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <slack-webhook-url>"
+  exit 1
+fi
+
+# Get latest high-severity insights
+INSIGHTS=$(cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical") | .[0:3]')
+
+# Format for Slack
+MESSAGE=$(echo "$INSIGHTS" | jq -r '
+  "🚨 *High Priority Customer Insights:*\n\n" +
+  (.[] | 
+    "• *" + .title + "*\n" +
+    "  Severity: " + .severity + "\n" +
+    "  Pain Point: " + .pain_point + "\n\n"
+  )
+')
+
+# Send to Slack
+curl -X POST -H 'Content-type: application/json' \
+  --data "{\"text\":\"$MESSAGE\"}" \
+  "$SLACK_WEBHOOK_URL"
+```
+
+### Jira Integration
+
+```bash
+#!/bin/bash
+# jira-insights.sh
+
+JIRA_URL="$1"
+JIRA_USER="$2"
+JIRA_TOKEN="$3"
+
+if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ]; then
+  echo "Usage: $0 <jira-url> <jira-user> <jira-token>"
+  exit 1
+fi
+
+# Get high-severity insights
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+  TITLE=$(echo "$insight" | jq -r '.title')
+  PAIN_POINT=$(echo "$insight" | jq -r '.pain_point')
+  SEVERITY=$(echo "$insight" | jq -r '.severity')
+  INSIGHT_ID=$(echo "$insight" | jq -r '.id')
+  
+  # Create Jira ticket
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -u "$JIRA_USER:$JIRA_TOKEN" \
+    "$JIRA_URL/rest/api/2/issue" \
+    -d "{
+      \"fields\": {
+        \"project\": {\"key\": \"PROD\"},
+        \"summary\": \"Customer Insight: $TITLE\",
+        \"description\": \"**Pain Point:** $PAIN_POINT\n\n**Insight ID:** $INSIGHT_ID\",
+        \"issuetype\": {\"name\": \"Bug\"},
+        \"priority\": {\"name\": \"$SEVERITY\"}
+      }
+    }"
+done
+```
+
+## ❌ Error Handling
+
+### Common Errors
+
+<Error>
+**Insight Not Found**
+```
+❌ Error: Insight not found
+```
+**Solution**: Check the insight ID is correct and exists.
+</Error>
+
+<Error>
+**API Key Missing**
+```
+🔑 No API key configured!
+```
+**Solution**: Run `cl config set --api-key <your-key>`.
+</Error>
+
+<Error>
+**Invalid Parameters**
+```
+❌ Validation Error: Invalid page number
+```
+**Solution**: Use valid page numbers (1 or higher).
+</Error>
+
+### Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `NOT_FOUND` | Insight not found | Check insight ID is correct |
+| `NO_API_KEY` | No API key configured | Set API key with `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `VALIDATION_ERROR` | Invalid parameters | Check page number and other parameters |
+| `RATE_LIMITED` | Too many requests | Wait and retry |
+
+## 🎯 Best Practices
+
+### 1. Use JSON for Automation
+
+```bash
+# Good - structured output
+INSIGHT_TITLE=$(cl feedback --json | jq -r '.data[0].title')
+
+# Bad - parsing text output
+INSIGHT_TITLE=$(cl feedback | grep "Title:" | cut -d' ' -f2)
+```
+
+### 2. Filter by Severity
+
+```bash
+# Good - focus on high-priority issues
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")'
+
+# Bad - processing all insights
+cl feedback --json | jq '.data[]'
+```
+
+### 3. Regular Monitoring
+
+```bash
+# Set up daily monitoring
+echo "0 9 * * * /path/to/daily-insights.sh" | crontab -
+
+# Weekly priority reviews
+echo "0 9 * * 1 /path/to/feature-priority.sh" | crontab -
+```
+
+### 4. Track Business Impact
+
+```bash
+# Good - focus on deal blockers
+cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)'
+
+# Also good - track willingness to pay
+cl feedback --json | jq '.data[] | select(.willingness_to_pay | contains("High"))'
+```
+
+## 🔗 Related Commands
+
+- **[Ingest Command](/cli/commands/ingest)** - Submit feedback for analysis
+- **[Team Command](/cli/commands/team)** - Manage team settings
+- **[Config Command](/cli/commands/config)** - Configure API key
+
+<Card
+  title="Ready to Manage Your Team?"
+  icon="users"
+  href="/cli/commands/team"
+>
+  Learn how to configure team settings and website information
+</Card>

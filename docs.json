@@ -58,6 +58,10 @@
             "group": "Commands & Usage",
             "pages": [
               "cli/commands",
+              "cli/commands/ingest",
+              "cli/commands/feedback",
+              "cli/commands/team",
+              "cli/commands/config",
               "cli/examples"
             ]
           }
