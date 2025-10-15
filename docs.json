@@ -67,7 +67,11 @@
                   "cli/commands/config"
                 ]
               },
-              "cli/examples"
+              "cli/examples",
+              "cli/scripts",
+              "cli/integrations",
+              "cli/monitoring",
+              "cli/best-practices"
             ]
           }
         ]

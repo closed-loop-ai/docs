@@ -1,0 +1,588 @@
+---
+title: 'Monitoring & Analytics'
+description: 'Monitor CLI usage, track insights, and analyze customer feedback trends'
+---
+
+## 📊 Overview
+
+This page covers monitoring and analytics for ClosedLoop AI CLI usage. Learn how to track processing performance, monitor customer sentiment, and analyze feedback trends over time.
+
+## 📈 Performance Monitoring
+
+### Processing Performance Tracker
+
+Track how long it takes to process feedback:
+
+```bash
+#!/bin/bash
+# performance-monitor.sh
+
+echo "=== Processing Performance Report ==="
+echo
+
+# Get processing times
+cl ingest --json | jq '.data[] | {
+  id: .id,
+  title: .title,
+  status: .status,
+  created: .created_at,
+  processing_time: (
+    if .status == "completed" then
+      (.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - 
+      (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)
+    else
+      "processing"
+    end
+  )
+}'
+
+echo
+echo "=== Summary Statistics ==="
+cl ingest --json | jq '
+  .data |
+  {
+    total: length,
+    completed: map(select(.status == "completed")) | length,
+    processing: map(select(.status == "processing")) | length,
+    failed: map(select(.status == "failed")) | length,
+    average_processing_time: (
+      map(select(.status == "completed")) |
+      map((.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)) |
+      if length > 0 then add / length else 0 end
+    )
+  }
+'
+```
+
+### Real-time Processing Monitor
+
+Monitor processing in real-time:
+
+```bash
+#!/bin/bash
+# real-time-monitor.sh
+
+echo "=== Real-time Processing Monitor ==="
+echo "Press Ctrl+C to stop"
+echo
+
+while true; do
+  # Get current processing status
+  PROCESSING_COUNT=$(cl ingest --json | jq '.data | map(select(.status == "processing")) | length')
+  COMPLETED_COUNT=$(cl ingest --json | jq '.data | map(select(.status == "completed")) | length')
+  FAILED_COUNT=$(cl ingest --json | jq '.data | map(select(.status == "failed")) | length')
+  
+  echo "$(date): Processing: $PROCESSING_COUNT, Completed: $COMPLETED_COUNT, Failed: $FAILED_COUNT"
+  
+  # Check for new completions
+  if [ "$COMPLETED_COUNT" -gt 0 ]; then
+    echo "✅ New insights available! Run 'cl feedback' to view them."
+  fi
+  
+  # Check for failures
+  if [ "$FAILED_COUNT" -gt 0 ]; then
+    echo "❌ Some processing failed. Check logs for details."
+  fi
+  
+  sleep 30  # Check every 30 seconds
+done
+```
+
+### Processing Queue Monitor
+
+Monitor the processing queue:
+
+```bash
+#!/bin/bash
+# queue-monitor.sh
+
+echo "=== Processing Queue Monitor ==="
+echo
+
+# Get queue status
+QUEUE_STATUS=$(cl ingest --json | jq '
+  .data |
+  {
+    total_in_queue: length,
+    processing: map(select(.status == "processing")) | length,
+    completed: map(select(.status == "completed")) | length,
+    failed: map(select(.status == "failed")) | length,
+    oldest_processing: (
+      map(select(.status == "processing")) |
+      map(.created_at) |
+      if length > 0 then min else null end
+    )
+  }
+')
+
+echo "$QUEUE_STATUS" | jq '.'
+
+# Show oldest processing items
+echo
+echo "=== Oldest Processing Items ==="
+cl ingest --json | jq '.data[] | select(.status == "processing") | {
+  id: .id,
+  title: .title,
+  created: .created_at,
+  age_minutes: (
+    (now - (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)) / 60
+  )
+}' | jq -s 'sort_by(.age_minutes) | reverse | .[0:5]'
+```
+
+## 📊 Insights Analytics
+
+### Daily Insights Dashboard
+
+Generate a comprehensive daily dashboard:
+
+```bash
+#!/bin/bash
+# daily-dashboard.sh
+
+TODAY=$(date +%Y-%m-%d)
+
+echo "=== Daily Insights Dashboard - $TODAY ==="
+echo
+
+# Get today's insights
+TODAY_INSIGHTS=$(cl feedback --json | jq --arg today "$TODAY" '
+  .data | map(select(.created_at | startswith($today)))
+')
+
+# Basic statistics
+echo "📊 Basic Statistics:"
+echo "$TODAY_INSIGHTS" | jq '
+  {
+    total_insights: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    by_status: group_by(.status) | map({status: .[0].status, count: length})
+  }
+'
+
+echo
+echo "🎯 Top Pain Points:"
+echo "$TODAY_INSIGHTS" | jq '
+  group_by(.pain_point) |
+  map({pain_point: .[0].pain_point, count: length}) |
+  sort_by(.count) |
+  reverse |
+  .[0:5]
+'
+
+echo
+echo "🚨 High Priority Issues:"
+echo "$TODAY_INSIGHTS" | jq '
+  map(select(.severity == "high" or .severity == "critical")) |
+  .[] | {
+    title: .title,
+    severity: .severity,
+    pain_point: .pain_point
+  }
+'
+```
+
+### Weekly Trends Analysis
+
+Analyze weekly trends:
+
+```bash
+#!/bin/bash
+# weekly-trends.sh
+
+# Get date range for this week
+START_DATE=$(date -d "last monday" +%Y-%m-%d)
+END_DATE=$(date -d "last sunday" +%Y-%m-%d)
+
+echo "=== Weekly Trends Analysis - $START_DATE to $END_DATE ==="
+echo
+
+# Get insights from this week
+WEEKLY_INSIGHTS=$(cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
+  .data | map(select(.created_at >= $start and .created_at <= $end))
+')
+
+echo "📈 Weekly Summary:"
+echo "$WEEKLY_INSIGHTS" | jq '
+  {
+    total_insights: length,
+    severity_trends: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    status_trends: group_by(.status) | map({status: .[0].status, count: length}),
+    top_pain_points: group_by(.pain_point) | map({pain_point: .[0].pain_point, count: length}) | sort_by(.count) | reverse | .[0:10]
+  }
+'
+
+echo
+echo "📅 Daily Breakdown:"
+echo "$WEEKLY_INSIGHTS" | jq '
+  group_by(.created_at | split("T")[0]) |
+  map({
+    date: .[0].created_at | split("T")[0],
+    count: length,
+    severities: group_by(.severity) | map({severity: .[0].severity, count: length})
+  }) |
+  sort_by(.date)
+'
+```
+
+### Customer Sentiment Tracking
+
+Track customer sentiment over time:
+
+```bash
+#!/bin/bash
+# sentiment-tracker.sh
+
+CUSTOMER_ID="$1"
+
+if [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <customer-id>"
+  exit 1
+fi
+
+echo "=== Sentiment Analysis for Customer: $CUSTOMER_ID ==="
+echo
+
+# Get all insights for this customer
+CUSTOMER_INSIGHTS=$(cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data | map(select(.customer_id == $customer))
+')
+
+echo "📊 Sentiment Summary:"
+echo "$CUSTOMER_INSIGHTS" | jq '
+  {
+    total_insights: length,
+    sentiment_breakdown: group_by(.sentiment) | map({sentiment: .[0].sentiment, count: length}),
+    severity_breakdown: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    recent_trend: (
+      map(select(.created_at >= (now - 86400 * 7 | strftime("%Y-%m-%d")))) |
+      group_by(.sentiment) |
+      map({sentiment: .[0].sentiment, count: length})
+    )
+  }
+'
+
+echo
+echo "📈 Timeline:"
+echo "$CUSTOMER_INSIGHTS" | jq '
+  map({
+    date: .created_at | split("T")[0],
+    title: .title,
+    sentiment: .sentiment,
+    severity: .severity
+  }) |
+  sort_by(.date) |
+  reverse
+'
+```
+
+## 🚨 Alerting & Notifications
+
+### High Severity Alert System
+
+Alert on high-severity insights:
+
+```bash
+#!/bin/bash
+# high-severity-alert.sh
+
+# Get high-severity insights from today
+TODAY=$(date +%Y-%m-%d)
+HIGH_SEVERITY_COUNT=$(cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical"))) |
+  length
+')
+
+if [ "$HIGH_SEVERITY_COUNT" -gt 0 ]; then
+  echo "🚨 ALERT: $HIGH_SEVERITY_COUNT high-severity insights found today!"
+  echo
+  
+  # Show details
+  cl feedback --json | jq --arg today "$TODAY" '
+    .data[] | 
+    select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical")) |
+    {
+      title: .title,
+      severity: .severity,
+      pain_point: .pain_point,
+      created: .created_at
+    }
+  '
+  
+  # Send notification (customize based on your notification system)
+  echo "Sending alert notification..."
+  # ./slack-alerts.sh $SLACK_WEBHOOK_URL
+  # ./email-alert.sh admin@company.com
+else
+  echo "✅ No high-severity insights today"
+fi
+```
+
+### Deal Blocker Monitor
+
+Monitor for insights that might block deals:
+
+```bash
+#!/bin/bash
+# deal-blocker-monitor.sh
+
+# Get deal blocker insights
+DEAL_BLOCKERS=$(cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)')
+
+if [ "$(echo "$DEAL_BLOCKERS" | jq -s 'length')" -gt 0 ]; then
+  echo "🚨 DEAL BLOCKER ALERT: Critical insights that may impact deals!"
+  echo
+  
+  echo "$DEAL_BLOCKERS" | jq -s '.[] | {
+    title: .title,
+    pain_point: .pain_point,
+    severity: .severity,
+    created: .created_at,
+    customer_id: .customer_id
+  }'
+  
+  # Send urgent notification
+  echo "Sending urgent deal blocker notification..."
+  # ./urgent-alert.sh
+else
+  echo "✅ No deal blocker insights found"
+fi
+```
+
+### Processing Failure Monitor
+
+Monitor for processing failures:
+
+```bash
+#!/bin/bash
+# failure-monitor.sh
+
+# Get failed processing items
+FAILED_ITEMS=$(cl ingest --json | jq '.data[] | select(.status == "failed")')
+
+if [ "$(echo "$FAILED_ITEMS" | jq -s 'length')" -gt 0 ]; then
+  echo "❌ PROCESSING FAILURES DETECTED!"
+  echo
+  
+  echo "$FAILED_ITEMS" | jq -s '.[] | {
+    id: .id,
+    title: .title,
+    created: .created_at,
+    error: .error_message
+  }'
+  
+  # Send failure notification
+  echo "Sending failure notification..."
+  # ./failure-alert.sh
+else
+  echo "✅ No processing failures detected"
+fi
+```
+
+## 📊 Custom Analytics
+
+### Feature Request Tracker
+
+Track feature requests and their frequency:
+
+```bash
+#!/bin/bash
+# feature-request-tracker.sh
+
+echo "=== Feature Request Analysis ==="
+echo
+
+# Get all insights and look for feature requests
+cl feedback --json | jq '
+  .data[] |
+  select(.title | test("feature|request|enhancement|improvement"; "i")) |
+  {
+    title: .title,
+    pain_point: .pain_point,
+    severity: .severity,
+    created: .created_at,
+    customer_id: .customer_id
+  }
+' | jq -s '
+  {
+    total_feature_requests: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    top_requests: group_by(.title) | map({title: .[0].title, count: length}) | sort_by(.count) | reverse | .[0:10]
+  }
+'
+```
+
+### Competitive Analysis Tracker
+
+Track mentions of competitors:
+
+```bash
+#!/bin/bash
+# competitive-analysis.sh
+
+echo "=== Competitive Analysis ==="
+echo
+
+# Get insights mentioning competitors
+cl feedback --json | jq '
+  .data[] |
+  select(.competitor_gap != null and .competitor_gap != "") |
+  {
+    title: .title,
+    competitor_gap: .competitor_gap,
+    pain_point: .pain_point,
+    severity: .severity,
+    created: .created_at
+  }
+' | jq -s '
+  {
+    total_competitive_mentions: length,
+    competitor_analysis: group_by(.competitor_gap) | map({competitor: .[0].competitor_gap, count: length}) | sort_by(.count) | reverse
+  }
+'
+```
+
+### Customer Health Score
+
+Calculate customer health scores:
+
+```bash
+#!/bin/bash
+# customer-health-score.sh
+
+CUSTOMER_ID="$1"
+
+if [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <customer-id>"
+  exit 1
+fi
+
+echo "=== Customer Health Score: $CUSTOMER_ID ==="
+echo
+
+# Get customer insights
+CUSTOMER_INSIGHTS=$(cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data | map(select(.customer_id == $customer))
+')
+
+# Calculate health score
+HEALTH_SCORE=$(echo "$CUSTOMER_INSIGHTS" | jq '
+  if length == 0 then
+    100  # No insights = good health
+  else
+    # Base score
+    base_score = 100
+    
+    # Deduct points for negative sentiment
+    negative_sentiment = map(select(.sentiment == "negative")) | length
+    sentiment_penalty = negative_sentiment * 10
+    
+    # Deduct points for high severity
+    high_severity = map(select(.severity == "high" or .severity == "critical")) | length
+    severity_penalty = high_severity * 15
+    
+    # Deduct points for deal blockers
+    deal_blockers = map(select(.is_deal_blocker == true)) | length
+    blocker_penalty = deal_blockers * 25
+    
+    # Calculate final score
+    final_score = base_score - sentiment_penalty - severity_penalty - blocker_penalty
+    
+    # Ensure score is between 0 and 100
+    if final_score < 0 then 0 else final_score end
+  end
+')
+
+echo "Health Score: $HEALTH_SCORE/100"
+
+# Provide interpretation
+if [ "$HEALTH_SCORE" -ge 80 ]; then
+  echo "Status: 🟢 Healthy"
+elif [ "$HEALTH_SCORE" -ge 60 ]; then
+  echo "Status: 🟡 At Risk"
+else
+  echo "Status: 🔴 Critical"
+fi
+
+echo
+echo "Breakdown:"
+echo "$CUSTOMER_INSIGHTS" | jq '
+  {
+    total_insights: length,
+    negative_sentiment: map(select(.sentiment == "negative")) | length,
+    high_severity: map(select(.severity == "high" or .severity == "critical")) | length,
+    deal_blockers: map(select(.is_deal_blocker == true)) | length
+  }
+'
+```
+
+## 🔄 Automated Monitoring
+
+### Set Up Cron Jobs
+
+Set up automated monitoring with cron:
+
+```bash
+# Daily insights dashboard at 9 AM
+echo "0 9 * * * /path/to/daily-dashboard.sh >> /var/log/closedloop-daily.log 2>&1" | crontab -
+
+# High severity alerts at 10 AM
+echo "0 10 * * * /path/to/high-severity-alert.sh >> /var/log/closedloop-alerts.log 2>&1" | crontab -
+
+# Weekly trends analysis on Mondays at 9 AM
+echo "0 9 * * 1 /path/to/weekly-trends.sh >> /var/log/closedloop-weekly.log 2>&1" | crontab -
+
+# Real-time monitoring every 5 minutes
+echo "*/5 * * * * /path/to/real-time-monitor.sh >> /var/log/closedloop-realtime.log 2>&1" | crontab -
+
+# Deal blocker monitoring every hour
+echo "0 * * * * /path/to/deal-blocker-monitor.sh >> /var/log/closedloop-dealblocker.log 2>&1" | crontab -
+```
+
+### Log Management
+
+Set up log rotation:
+
+```bash
+# Create logrotate configuration
+sudo tee /etc/logrotate.d/closedloop << EOF
+/var/log/closedloop-*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 644 root root
+}
+EOF
+```
+
+## 📋 Monitoring Checklist
+
+### Daily Monitoring
+- [ ] Check processing queue status
+- [ ] Review high-severity insights
+- [ ] Monitor processing failures
+- [ ] Check deal blocker alerts
+
+### Weekly Monitoring
+- [ ] Analyze weekly trends
+- [ ] Review customer health scores
+- [ ] Check feature request patterns
+- [ ] Analyze competitive mentions
+
+### Monthly Monitoring
+- [ ] Generate comprehensive analytics report
+- [ ] Review processing performance metrics
+- [ ] Analyze customer sentiment trends
+- [ ] Update monitoring thresholds
+
+<Card
+  title="Ready for Best Practices?"
+  icon="star"
+  href="/cli/best-practices"
+>
+  Learn best practices for using ClosedLoop AI CLI effectively
+</Card>

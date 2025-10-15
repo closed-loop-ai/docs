@@ -1,0 +1,549 @@
+---
+title: 'Best Practices'
+description: 'Best practices for using ClosedLoop AI CLI effectively and efficiently'
+---
+
+## 🎯 Overview
+
+This page covers best practices for using ClosedLoop AI CLI effectively. Follow these guidelines to get the most value from your customer feedback analysis and ensure optimal performance.
+
+## 📝 Feedback Ingestion Best Practices
+
+### 1. Use Descriptive Titles
+
+Always provide clear, descriptive titles for your feedback:
+
+```bash
+# ✅ Good - descriptive and specific
+cl ingest "The mobile app crashes when uploading large files on iOS 17" \
+  --title "iOS 17 File Upload Crash Issue"
+
+# ❌ Bad - vague and unhelpful
+cl ingest "App broken" --title "Bug"
+```
+
+### 2. Include Rich Context
+
+Provide as much context as possible for better AI analysis:
+
+```bash
+# ✅ Good - rich context
+cl ingest "The new pricing model is confusing and we're not sure what we're paying for anymore" \
+  --title "Pricing Model Confusion" \
+  --customer "enterprise-123" \
+  --name "John Smith" \
+  --email "john@company.com" \
+  --url "https://support.company.com/ticket/456"
+
+# ❌ Bad - minimal context
+cl ingest "Pricing confusing"
+```
+
+### 3. Use Consistent Customer IDs
+
+Use consistent customer identification for better tracking:
+
+```bash
+# ✅ Good - consistent format
+cl ingest "Feedback content" --customer "customer-123"
+cl ingest "More feedback" --customer "customer-123"
+
+# ❌ Bad - inconsistent formats
+cl ingest "Feedback content" --customer "123"
+cl ingest "More feedback" --customer "Customer 123"
+```
+
+### 4. Include Source URLs
+
+Always include source URLs when available:
+
+```bash
+# ✅ Good - includes source
+cl ingest "Support ticket content" \
+  --url "https://support.company.com/ticket/12345"
+
+# ❌ Bad - no source tracking
+cl ingest "Support ticket content"
+```
+
+## 🔧 Configuration Best Practices
+
+### 1. Set Your Product Website
+
+Always configure your product website for better AI analysis:
+
+```bash
+# ✅ Good - set product website
+cl team website "https://yourproduct.com"
+
+# ❌ Bad - no website configured
+# AI won't understand your product context
+```
+
+### 2. Use Environment Variables for API Keys
+
+Use environment variables in production environments:
+
+```bash
+# ✅ Good - for production
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# ✅ Also good - for local development
+cl config set --api-key "your-api-key-here"
+```
+
+### 3. Validate Configuration
+
+Always validate your configuration before processing:
+
+```bash
+# ✅ Good - validate before use
+cl config
+cl team website
+
+# ❌ Bad - assume configuration is correct
+```
+
+## 📊 Data Management Best Practices
+
+### 1. Use JSON Output for Scripting
+
+Use JSON output for automation and scripting:
+
+```bash
+# ✅ Good - structured output
+FEEDBACK_ID=$(cl ingest "$CONTENT" --json | jq -r '.id')
+
+# ❌ Bad - parsing text output
+FEEDBACK_ID=$(cl ingest "$CONTENT" | grep "ID:" | cut -d' ' -f2)
+```
+
+### 2. Handle Processing Status
+
+Always check processing status for important feedback:
+
+```bash
+# ✅ Good - wait for completion
+cl ingest "$CONTENT" --wait
+
+# ✅ Also good - check status later
+ID=$(cl ingest "$CONTENT" --json | jq -r '.id')
+cl ingest "$ID" --status
+```
+
+### 3. Use Pagination for Large Datasets
+
+Use pagination when working with large datasets:
+
+```bash
+# ✅ Good - use pagination
+cl feedback --page 1 --limit 20
+cl ingest --page 2 --limit 50
+
+# ❌ Bad - try to load everything at once
+cl feedback  # Might timeout with large datasets
+```
+
+## 🚀 Automation Best Practices
+
+### 1. Error Handling
+
+Always include proper error handling in scripts:
+
+```bash
+#!/bin/bash
+# ✅ Good - proper error handling
+set -e  # Exit on any error
+
+FEEDBACK_FILE="$1"
+if [ -z "$FEEDBACK_FILE" ]; then
+  echo "Error: Feedback file required"
+  exit 1
+fi
+
+if [ ! -f "$FEEDBACK_FILE" ]; then
+  echo "Error: File not found: $FEEDBACK_FILE"
+  exit 1
+fi
+
+# Process feedback
+cl ingest "$(cat "$FEEDBACK_FILE")" --wait
+```
+
+### 2. Logging
+
+Include proper logging in automation scripts:
+
+```bash
+#!/bin/bash
+# ✅ Good - proper logging
+LOG_FILE="/var/log/closedloop-processing.log"
+
+log() {
+  echo "$(date): $1" | tee -a "$LOG_FILE"
+}
+
+log "Starting feedback processing"
+cl ingest "$CONTENT" --wait
+log "Feedback processing completed"
+```
+
+### 3. Rate Limiting
+
+Respect API rate limits in automation:
+
+```bash
+#!/bin/bash
+# ✅ Good - rate limiting
+for file in feedback/*.txt; do
+  cl ingest "$(cat "$file")" --wait
+  sleep 2  # Wait 2 seconds between requests
+done
+```
+
+## 🔍 Analysis Best Practices
+
+### 1. Filter by Severity
+
+Focus on high-priority insights:
+
+```bash
+# ✅ Good - focus on high priority
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")'
+
+# ❌ Bad - process all insights equally
+cl feedback --json | jq '.data[]'
+```
+
+### 2. Track Business Impact
+
+Monitor deal blockers and business impact:
+
+```bash
+# ✅ Good - track business impact
+cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)'
+
+# ✅ Also good - track willingness to pay
+cl feedback --json | jq '.data[] | select(.willingness_to_pay | contains("High"))'
+```
+
+### 3. Regular Monitoring
+
+Set up regular monitoring and alerts:
+
+```bash
+# ✅ Good - daily monitoring
+echo "0 9 * * * /path/to/daily-insights.sh" | crontab -
+
+# ✅ Good - weekly analysis
+echo "0 9 * * 1 /path/to/weekly-trends.sh" | crontab -
+```
+
+## 🔐 Security Best Practices
+
+### 1. Secure API Key Storage
+
+Never commit API keys to version control:
+
+```bash
+# ✅ Good - use environment variables
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# ✅ Good - use secrets management
+# AWS Secrets Manager, Azure Key Vault, etc.
+
+# ❌ Bad - hardcode in scripts
+API_KEY="your-api-key-here"  # Don't do this!
+```
+
+### 2. Secure Configuration Files
+
+Set proper permissions on configuration files:
+
+```bash
+# ✅ Good - secure permissions
+chmod 600 ~/.closedloop/config.json
+chown $USER ~/.closedloop/config.json
+```
+
+### 3. Validate Input Data
+
+Always validate input data before processing:
+
+```bash
+#!/bin/bash
+# ✅ Good - input validation
+FEEDBACK_CONTENT="$1"
+
+if [ -z "$FEEDBACK_CONTENT" ]; then
+  echo "Error: Feedback content cannot be empty"
+  exit 1
+fi
+
+if [ ${#FEEDBACK_CONTENT} -lt 10 ]; then
+  echo "Error: Feedback content too short (minimum 10 characters)"
+  exit 1
+fi
+
+cl ingest "$FEEDBACK_CONTENT"
+```
+
+## 📈 Performance Best Practices
+
+### 1. Batch Processing
+
+Process multiple items in batches:
+
+```bash
+#!/bin/bash
+# ✅ Good - batch processing
+BATCH_SIZE=10
+FEEDBACK_FILES=($(ls feedback/*.txt))
+
+for ((i=0; i<${#FEEDBACK_FILES[@]}; i+=BATCH_SIZE)); do
+  batch=("${FEEDBACK_FILES[@]:i:BATCH_SIZE}")
+  
+  for file in "${batch[@]}"; do
+    cl ingest "$(cat "$file")" &
+  done
+  
+  wait  # Wait for batch to complete
+  sleep 5  # Brief pause between batches
+done
+```
+
+### 2. Parallel Processing
+
+Use parallel processing when appropriate:
+
+```bash
+#!/bin/bash
+# ✅ Good - parallel processing
+export -f process_feedback
+
+process_feedback() {
+  local file="$1"
+  cl ingest "$(cat "$file")" --wait
+}
+
+export -f process_feedback
+find feedback/ -name "*.txt" | parallel process_feedback
+```
+
+### 3. Caching
+
+Cache frequently accessed data:
+
+```bash
+#!/bin/bash
+# ✅ Good - caching
+CACHE_FILE="/tmp/insights-cache.json"
+CACHE_AGE=300  # 5 minutes
+
+if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(stat -c %Y "$CACHE_FILE"))) -gt $CACHE_AGE ]; then
+  cl feedback --json > "$CACHE_FILE"
+fi
+
+# Use cached data
+jq '.data[]' "$CACHE_FILE"
+```
+
+## 🎯 Workflow Best Practices
+
+### 1. Consistent Naming Conventions
+
+Use consistent naming conventions:
+
+```bash
+# ✅ Good - consistent naming
+cl ingest "Content" --title "Feature Request: Dark Mode"
+cl ingest "Content" --title "Bug Report: Login Issue"
+cl ingest "Content" --title "Enhancement: Performance"
+
+# ❌ Bad - inconsistent naming
+cl ingest "Content" --title "dark mode"
+cl ingest "Content" --title "LOGIN BUG"
+cl ingest "Content" --title "perf enhancement"
+```
+
+### 2. Regular Cleanup
+
+Regularly clean up old data and logs:
+
+```bash
+#!/bin/bash
+# ✅ Good - regular cleanup
+# Clean up old log files
+find /var/log -name "closedloop-*.log" -mtime +30 -delete
+
+# Clean up temporary files
+find /tmp -name "closedloop-*" -mtime +1 -delete
+```
+
+### 3. Documentation
+
+Document your workflows and scripts:
+
+```bash
+#!/bin/bash
+# ✅ Good - documented script
+# process-feedback.sh
+# 
+# Processes customer feedback files and ingests them into ClosedLoop AI
+# 
+# Usage: ./process-feedback.sh <feedback-file> <customer-id>
+# 
+# Requirements:
+# - ClosedLoop AI CLI installed and configured
+# - Valid API key set
+# - Feedback file exists and is readable
+# 
+# Examples:
+#   ./process-feedback.sh feedback.txt customer-123
+#   ./process-feedback.sh /path/to/feedback.txt enterprise-456
+```
+
+## 🔄 Integration Best Practices
+
+### 1. Test Integrations
+
+Always test integrations before deploying:
+
+```bash
+#!/bin/bash
+# ✅ Good - test integration
+echo "Testing Slack integration..."
+./slack-insights.sh "$SLACK_WEBHOOK_URL"
+
+if [ $? -eq 0 ]; then
+  echo "✅ Slack integration test passed"
+else
+  echo "❌ Slack integration test failed"
+  exit 1
+fi
+```
+
+### 2. Handle Integration Failures
+
+Handle integration failures gracefully:
+
+```bash
+#!/bin/bash
+# ✅ Good - handle failures
+send_to_slack() {
+  local message="$1"
+  
+  if curl -X POST -H 'Content-type: application/json' \
+    --data "{\"text\":\"$message\"}" \
+    "$SLACK_WEBHOOK_URL" 2>/dev/null; then
+    echo "✅ Message sent to Slack"
+  else
+    echo "❌ Failed to send to Slack, saving to file"
+    echo "$message" >> /var/log/closedloop-failed-messages.log
+  fi
+}
+```
+
+### 3. Monitor Integration Health
+
+Monitor the health of your integrations:
+
+```bash
+#!/bin/bash
+# ✅ Good - monitor integration health
+check_integration_health() {
+  local integration="$1"
+  local test_command="$2"
+  
+  if eval "$test_command" >/dev/null 2>&1; then
+    echo "✅ $integration: Healthy"
+    return 0
+  else
+    echo "❌ $integration: Unhealthy"
+    return 1
+  fi
+}
+
+# Check all integrations
+check_integration_health "Slack" "./slack-insights.sh test"
+check_integration_health "Jira" "./jira-integration.sh test"
+check_integration_health "Email" "./email-insights.sh test"
+```
+
+## 📋 Best Practices Checklist
+
+### Setup & Configuration
+- [ ] Set product website URL
+- [ ] Use environment variables for API keys
+- [ ] Validate configuration before use
+- [ ] Set secure file permissions
+
+### Data Ingestion
+- [ ] Use descriptive titles
+- [ ] Include rich context
+- [ ] Use consistent customer IDs
+- [ ] Include source URLs when available
+
+### Automation & Scripting
+- [ ] Include proper error handling
+- [ ] Add logging to scripts
+- [ ] Respect rate limits
+- [ ] Use JSON output for scripting
+
+### Analysis & Monitoring
+- [ ] Filter by severity for priority
+- [ ] Track business impact
+- [ ] Set up regular monitoring
+- [ ] Use pagination for large datasets
+
+### Security & Performance
+- [ ] Never commit API keys
+- [ ] Validate input data
+- [ ] Use batch processing
+- [ ] Implement caching where appropriate
+
+### Integration & Workflows
+- [ ] Test integrations before deployment
+- [ ] Handle integration failures gracefully
+- [ ] Monitor integration health
+- [ ] Document workflows and scripts
+
+## 🎯 Quick Reference
+
+### Essential Commands
+```bash
+# Setup
+cl config set --api-key <key>
+cl team website "https://yourproduct.com"
+
+# Basic workflow
+cl ingest "feedback content" --title "Descriptive Title" --customer "customer-123"
+cl feedback
+
+# Automation
+cl ingest "$CONTENT" --json | jq -r '.id'
+cl feedback --json | jq '.data[] | select(.severity == "high")'
+```
+
+### Common Patterns
+```bash
+# Wait for processing
+cl ingest "$CONTENT" --wait
+
+# Get specific insight
+cl feedback <insight-id>
+
+# Filter by customer
+cl feedback --json | jq '.data[] | select(.customer_id == "customer-123")'
+
+# Export to CSV
+cl feedback --json | jq -r '.data[] | [.id, .title, .severity] | @csv'
+```
+
+<Card
+  title="Ready to Get Started?"
+  icon="rocket"
+  href="/cli/installation"
+>
+  Set up ClosedLoop AI CLI and start analyzing customer feedback
+</Card>

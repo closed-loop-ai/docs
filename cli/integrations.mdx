@@ -1,0 +1,558 @@
+---
+title: 'Integrations'
+description: 'Integrate ClosedLoop AI CLI with your existing tools and workflows'
+---
+
+## 🔗 Overview
+
+This page shows how to integrate ClosedLoop AI CLI with popular tools and platforms. These integrations help you automate feedback processing and seamlessly incorporate AI insights into your existing workflows.
+
+## 💬 Slack Integration
+
+### Send Insights to Slack Channel
+
+Send insights to a Slack channel using webhooks:
+
+```bash
+#!/bin/bash
+# slack-insights.sh
+
+SLACK_WEBHOOK_URL="$1"
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <slack-webhook-url>"
+  exit 1
+fi
+
+# Get latest insights
+INSIGHTS=$(cl feedback --json | jq '.data[0:5]')
+
+# Format for Slack
+MESSAGE=$(echo "$INSIGHTS" | jq -r '
+  "🚀 *Latest Customer Insights:*\n\n" +
+  (.[] | 
+    "• *" + .title + "*\n" +
+    "  Status: " + .status + "\n" +
+    "  Severity: " + .severity + "\n\n"
+  )
+')
+
+# Send to Slack
+curl -X POST -H 'Content-type: application/json' \
+  --data "{\"text\":\"$MESSAGE\"}" \
+  "$SLACK_WEBHOOK_URL"
+```
+
+### High Severity Slack Alerts
+
+Send alerts for high-severity insights:
+
+```bash
+#!/bin/bash
+# slack-alerts.sh
+
+SLACK_WEBHOOK_URL="$1"
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <slack-webhook-url>"
+  exit 1
+fi
+
+# Get high-severity insights from today
+TODAY=$(date +%Y-%m-%d)
+HIGH_SEVERITY=$(cl feedback --json | jq --arg today "$TODAY" '
+  .data[] | 
+  select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical"))
+')
+
+if [ "$(echo "$HIGH_SEVERITY" | jq -s 'length')" -gt 0 ]; then
+  MESSAGE=$(echo "$HIGH_SEVERITY" | jq -s -r '
+    "🚨 *High Severity Alert:*\n\n" +
+    (.[] | 
+      "• *" + .title + "*\n" +
+      "  Severity: " + .severity + "\n" +
+      "  Pain Point: " + .pain_point + "\n\n"
+    )
+  ')
+  
+  curl -X POST -H 'Content-type: application/json' \
+    --data "{\"text\":\"$MESSAGE\"}" \
+    "$SLACK_WEBHOOK_URL"
+fi
+```
+
+### Daily Summary to Slack
+
+Send daily insights summary:
+
+```bash
+#!/bin/bash
+# slack-daily-summary.sh
+
+SLACK_WEBHOOK_URL="$1"
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <slack-webhook-url>"
+  exit 1
+fi
+
+TODAY=$(date +%Y-%m-%d)
+
+# Get today's summary
+SUMMARY=$(cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today))) |
+  {
+    total: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    by_status: group_by(.status) | map({status: .[0].status, count: length})
+  }
+')
+
+MESSAGE=$(echo "$SUMMARY" | jq -r '
+  "📊 *Daily Insights Summary - " + $today + "*\n\n" +
+  "Total Insights: " + (.total | tostring) + "\n\n" +
+  "*By Severity:*\n" +
+  (.by_severity[] | "• " + .severity + ": " + (.count | tostring)) + "\n\n" +
+  "*By Status:*\n" +
+  (.by_status[] | "• " + .status + ": " + (.count | tostring))
+')
+
+curl -X POST -H 'Content-type: application/json' \
+  --data "{\"text\":\"$MESSAGE\"}" \
+  "$SLACK_WEBHOOK_URL"
+```
+
+## 🎫 Jira Integration
+
+### Create Jira Tickets from Insights
+
+Create Jira tickets from high-severity insights:
+
+```bash
+#!/bin/bash
+# jira-integration.sh
+
+JIRA_URL="$1"
+JIRA_USER="$2"
+JIRA_TOKEN="$3"
+
+if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ]; then
+  echo "Usage: $0 <jira-url> <jira-user> <jira-token>"
+  exit 1
+fi
+
+# Get high-severity insights
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+  TITLE=$(echo "$insight" | jq -r '.title')
+  PAIN_POINT=$(echo "$insight" | jq -r '.pain_point')
+  SEVERITY=$(echo "$insight" | jq -r '.severity')
+  INSIGHT_ID=$(echo "$insight" | jq -r '.id')
+  
+  # Create Jira ticket
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -u "$JIRA_USER:$JIRA_TOKEN" \
+    "$JIRA_URL/rest/api/2/issue" \
+    -d "{
+      \"fields\": {
+        \"project\": {\"key\": \"PROD\"},
+        \"summary\": \"Customer Insight: $TITLE\",
+        \"description\": \"**Pain Point:** $PAIN_POINT\n\n**Insight ID:** $INSIGHT_ID\n\n**Source:** ClosedLoop AI CLI\",
+        \"issuetype\": {\"name\": \"Bug\"},
+        \"priority\": {\"name\": \"$SEVERITY\"},
+        \"labels\": [\"customer-insight\", \"closedloop-ai\"]
+      }
+    }"
+done
+```
+
+### Update Jira Tickets with Insights
+
+Update existing Jira tickets with new insights:
+
+```bash
+#!/bin/bash
+# jira-update-tickets.sh
+
+JIRA_URL="$1"
+JIRA_USER="$2"
+JIRA_TOKEN="$3"
+TICKET_KEY="$4"
+
+if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ] || [ -z "$TICKET_KEY" ]; then
+  echo "Usage: $0 <jira-url> <jira-user> <jira-token> <ticket-key>"
+  exit 1
+fi
+
+# Get latest insights
+LATEST_INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+
+# Format insights for Jira comment
+COMMENT=$(echo "$LATEST_INSIGHTS" | jq -r '
+  "Latest Customer Insights:\n\n" +
+  (.[] | 
+    "• *" + .title + "*\n" +
+    "  Severity: " + .severity + "\n" +
+    "  Pain Point: " + .pain_point + "\n\n"
+  )
+')
+
+# Add comment to Jira ticket
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -u "$JIRA_USER:$JIRA_TOKEN" \
+  "$JIRA_URL/rest/api/2/issue/$TICKET_KEY/comment" \
+  -d "{
+    \"body\": \"$COMMENT\"
+  }"
+```
+
+## 📧 Email Integration
+
+### Send Insights via Email
+
+Send insights summary via email:
+
+```bash
+#!/bin/bash
+# email-insights.sh
+
+EMAIL_TO="$1"
+EMAIL_FROM="$2"
+
+if [ -z "$EMAIL_TO" ] || [ -z "$EMAIL_FROM" ]; then
+  echo "Usage: $0 <email-to> <email-from>"
+  exit 1
+fi
+
+TODAY=$(date +%Y-%m-%d)
+
+# Generate email content
+SUBJECT="Daily Customer Insights Summary - $TODAY"
+
+BODY=$(cl feedback --json | jq --arg today "$TODAY" -r '
+  "Daily Customer Insights Summary\n" +
+  "Date: " + $today + "\n\n" +
+  (.data | 
+    map(select(.created_at | startswith($today))) |
+    if length > 0 then
+      "Insights:\n" +
+      (.[] | 
+        "• " + .title + "\n" +
+        "  Severity: " + .severity + "\n" +
+        "  Status: " + .status + "\n" +
+        "  Pain Point: " + .pain_point + "\n\n"
+      )
+    else
+      "No new insights today.\n"
+    end
+  )
+')
+
+# Send email (requires mail command)
+echo "$BODY" | mail -s "$SUBJECT" -r "$EMAIL_FROM" "$EMAIL_TO"
+```
+
+## 🔄 GitHub Integration
+
+### Create GitHub Issues from Insights
+
+Create GitHub issues from high-severity insights:
+
+```bash
+#!/bin/bash
+# github-integration.sh
+
+GITHUB_TOKEN="$1"
+GITHUB_REPO="$2"
+
+if [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPO" ]; then
+  echo "Usage: $0 <github-token> <owner/repo>"
+  exit 1
+fi
+
+# Get high-severity insights
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+  TITLE=$(echo "$insight" | jq -r '.title')
+  PAIN_POINT=$(echo "$insight" | jq -r '.pain_point')
+  SEVERITY=$(echo "$insight" | jq -r '.severity')
+  INSIGHT_ID=$(echo "$insight" | jq -r '.id')
+  
+  # Create GitHub issue
+  curl -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    "https://api.github.com/repos/$GITHUB_REPO/issues" \
+    -d "{
+      \"title\": \"Customer Insight: $TITLE\",
+      \"body\": \"**Pain Point:** $PAIN_POINT\n\n**Insight ID:** $INSIGHT_ID\n\n**Source:** ClosedLoop AI CLI\",
+      \"labels\": [\"customer-insight\", \"closedloop-ai\", \"$SEVERITY\"]
+    }"
+done
+```
+
+## 📊 Google Sheets Integration
+
+### Export Insights to Google Sheets
+
+Export insights to Google Sheets using Google Apps Script:
+
+```bash
+#!/bin/bash
+# google-sheets-export.sh
+
+# Get insights data
+INSIGHTS_JSON=$(cl feedback --json)
+
+# Convert to CSV format
+echo "ID,Title,Severity,Status,Pain Point,Created,Updated" > insights.csv
+echo "$INSIGHTS_JSON" | jq -r '.data[] | [
+  .id,
+  .title,
+  .severity,
+  .status,
+  .pain_point,
+  .created_at,
+  .updated_at
+] | @csv' >> insights.csv
+
+echo "✅ Insights exported to insights.csv"
+echo "Upload this file to Google Sheets or use Google Apps Script to automate"
+```
+
+## 🔔 Discord Integration
+
+### Send Insights to Discord
+
+Send insights to Discord channel:
+
+```bash
+#!/bin/bash
+# discord-integration.sh
+
+DISCORD_WEBHOOK_URL="$1"
+
+if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <discord-webhook-url>"
+  exit 1
+fi
+
+# Get latest insights
+INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+
+# Format for Discord
+MESSAGE=$(echo "$INSIGHTS" | jq -r '
+  "🚀 **Latest Customer Insights:**\n\n" +
+  (.[] | 
+    "• **" + .title + "**\n" +
+    "  Status: " + .status + "\n" +
+    "  Severity: " + .severity + "\n\n"
+  )
+')
+
+# Send to Discord
+curl -X POST \
+  -H "Content-Type: application/json" \
+  --data "{\"content\":\"$MESSAGE\"}" \
+  "$DISCORD_WEBHOOK_URL"
+```
+
+## 🔧 Microsoft Teams Integration
+
+### Send Insights to Teams
+
+Send insights to Microsoft Teams channel:
+
+```bash
+#!/bin/bash
+# teams-integration.sh
+
+TEAMS_WEBHOOK_URL="$1"
+
+if [ -z "$TEAMS_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <teams-webhook-url>"
+  exit 1
+fi
+
+# Get latest insights
+INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+
+# Format for Teams
+MESSAGE=$(echo "$INSIGHTS" | jq -r '
+  {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "0076D7",
+    "summary": "Latest Customer Insights",
+    "sections": [{
+      "activityTitle": "🚀 Latest Customer Insights",
+      "activitySubtitle": "From ClosedLoop AI CLI",
+      "facts": (.[] | [
+        {"name": "Title", "value": .title},
+        {"name": "Severity", "value": .severity},
+        {"name": "Status", "value": .status}
+      ])
+    }]
+  }
+')
+
+# Send to Teams
+curl -X POST \
+  -H "Content-Type: application/json" \
+  --data "$MESSAGE" \
+  "$TEAMS_WEBHOOK_URL"
+```
+
+## 🚀 CI/CD Integration
+
+### GitHub Actions Integration
+
+Create a GitHub Actions workflow:
+
+```yaml
+# .github/workflows/feedback-analysis.yml
+name: Feedback Analysis
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup ClosedLoop CLI
+        run: |
+          npm install -g @closedloop-ai/cli
+          
+      - name: Configure API Key
+        run: |
+          cl config set --api-key ${{ secrets.CLOSEDLOOP_API_KEY }}
+          
+      - name: Analyze Feedback
+        run: |
+          cl feedback --json > insights.json
+          
+      - name: Send to Slack
+        if: success()
+        run: |
+          ./slack-insights.sh ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Upload Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: insights
+          path: insights.json
+```
+
+### Jenkins Integration
+
+Create a Jenkins pipeline:
+
+```groovy
+pipeline {
+    agent any
+    
+    triggers {
+        cron('0 9 * * *')  // Daily at 9 AM
+    }
+    
+    environment {
+        CLOSEDLOOP_API_KEY = credentials('closedloop-api-key')
+        SLACK_WEBHOOK_URL = credentials('slack-webhook-url')
+    }
+    
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'npm install -g @closedloop-ai/cli'
+                sh 'cl config set --api-key $CLOSEDLOOP_API_KEY'
+            }
+        }
+        
+        stage('Analyze') {
+            steps {
+                sh 'cl feedback --json > insights.json'
+            }
+        }
+        
+        stage('Notify') {
+            steps {
+                sh './slack-insights.sh $SLACK_WEBHOOK_URL'
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'insights.json'
+        }
+    }
+}
+```
+
+## 📋 Setup Instructions
+
+### 1. Get Webhook URLs
+
+**Slack:**
+1. Go to your Slack workspace
+2. Create a new app or use existing one
+3. Enable Incoming Webhooks
+4. Create webhook URL
+
+**Discord:**
+1. Go to your Discord server settings
+2. Navigate to Integrations > Webhooks
+3. Create new webhook
+4. Copy webhook URL
+
+**Microsoft Teams:**
+1. Go to your Teams channel
+2. Click "..." > Connectors
+3. Add Incoming Webhook
+4. Copy webhook URL
+
+### 2. Set Up API Keys
+
+```bash
+# Set up environment variables
+export SLACK_WEBHOOK_URL="your-slack-webhook-url"
+export DISCORD_WEBHOOK_URL="your-discord-webhook-url"
+export TEAMS_WEBHOOK_URL="your-teams-webhook-url"
+export GITHUB_TOKEN="your-github-token"
+export JIRA_USER="your-jira-username"
+export JIRA_TOKEN="your-jira-token"
+```
+
+### 3. Make Scripts Executable
+
+```bash
+chmod +x slack-insights.sh
+chmod +x jira-integration.sh
+chmod +x github-integration.sh
+chmod +x discord-integration.sh
+chmod +x teams-integration.sh
+```
+
+### 4. Test Integrations
+
+```bash
+# Test Slack integration
+./slack-insights.sh $SLACK_WEBHOOK_URL
+
+# Test Jira integration
+./jira-integration.sh $JIRA_URL $JIRA_USER $JIRA_TOKEN
+
+# Test GitHub integration
+./github-integration.sh $GITHUB_TOKEN owner/repo
+```
+
+<Card
+  title="Ready for Monitoring?"
+  icon="chart-line"
+  href="/cli/monitoring"
+>
+  Learn how to monitor and track your CLI usage and insights
+</Card>

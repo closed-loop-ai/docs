@@ -1,0 +1,512 @@
+---
+title: 'Automation Scripts'
+description: 'Ready-to-use scripts for automating ClosedLoop AI CLI workflows'
+---
+
+## 🔧 Overview
+
+This page contains production-ready scripts for automating common ClosedLoop AI CLI workflows. These scripts can be used for batch processing, monitoring, and integrating with your existing systems.
+
+## 📥 Automated Feedback Processing
+
+### Basic Processing Script
+
+Create a script to automatically process feedback files:
+
+```bash
+#!/bin/bash
+# process-feedback.sh
+
+FEEDBACK_FILE="$1"
+CUSTOMER_ID="$2"
+
+if [ -z "$FEEDBACK_FILE" ] || [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <feedback-file> <customer-id>"
+  exit 1
+fi
+
+# Read feedback content
+CONTENT=$(cat "$FEEDBACK_FILE")
+
+# Ingest feedback
+echo "Processing feedback for customer $CUSTOMER_ID..."
+ID=$(cl ingest "$CONTENT" --customer "$CUSTOMER_ID" --json | jq -r '.id')
+
+if [ "$ID" != "null" ]; then
+  echo "Feedback ingested successfully: $ID"
+  
+  # Wait for processing
+  echo "Waiting for AI analysis..."
+  cl ingest "$ID" --wait
+  
+  # Show results
+  echo "Analysis complete. View insights:"
+  cl feedback
+else
+  echo "Failed to ingest feedback"
+  exit 1
+fi
+```
+
+### Batch Processing Script
+
+Process multiple feedback files at once:
+
+```bash
+#!/bin/bash
+# batch-process.sh
+
+FEEDBACK_DIR="$1"
+
+if [ -z "$FEEDBACK_DIR" ]; then
+  echo "Usage: $0 <feedback-directory>"
+  exit 1
+fi
+
+# Process all .txt files in the directory
+for file in "$FEEDBACK_DIR"/*.txt; do
+  if [ -f "$file" ]; then
+    echo "Processing: $(basename "$file")"
+    
+    # Extract customer ID from filename (e.g., "customer-123-feedback.txt")
+    CUSTOMER_ID=$(basename "$file" | sed 's/-feedback\.txt$//')
+    
+    # Process the feedback
+    ./process-feedback.sh "$file" "$CUSTOMER_ID"
+    
+    echo "---"
+  fi
+done
+```
+
+### Interactive Feedback Processor
+
+Process feedback with interactive prompts:
+
+```bash
+#!/bin/bash
+# interactive-processor.sh
+
+echo "=== ClosedLoop AI Feedback Processor ==="
+echo
+
+# Get feedback content
+read -p "Enter feedback content: " FEEDBACK_CONTENT
+
+if [ -z "$FEEDBACK_CONTENT" ]; then
+  echo "Error: Feedback content cannot be empty"
+  exit 1
+fi
+
+# Get optional metadata
+read -p "Customer ID (optional): " CUSTOMER_ID
+read -p "Title (optional): " TITLE
+read -p "Reporter name (optional): " REPORTER_NAME
+read -p "Reporter email (optional): " REPORTER_EMAIL
+read -p "Source URL (optional): " SOURCE_URL
+
+# Build command
+CMD="cl ingest \"$FEEDBACK_CONTENT\""
+
+if [ -n "$CUSTOMER_ID" ]; then
+  CMD="$CMD --customer \"$CUSTOMER_ID\""
+fi
+
+if [ -n "$TITLE" ]; then
+  CMD="$CMD --title \"$TITLE\""
+fi
+
+if [ -n "$REPORTER_NAME" ]; then
+  CMD="$CMD --name \"$REPORTER_NAME\""
+fi
+
+if [ -n "$REPORTER_EMAIL" ]; then
+  CMD="$CMD --email \"$REPORTER_EMAIL\""
+fi
+
+if [ -n "$SOURCE_URL" ]; then
+  CMD="$CMD --url \"$SOURCE_URL\""
+fi
+
+# Execute command
+echo "Processing feedback..."
+eval $CMD
+
+echo "Feedback processed successfully!"
+```
+
+## 📊 Monitoring & Analytics Scripts
+
+### Daily Insights Report
+
+Generate a daily report of insights:
+
+```bash
+#!/bin/bash
+# daily-insights.sh
+
+# Get today's insights
+TODAY=$(date +%Y-%m-%d)
+
+echo "=== Daily Insights Report - $TODAY ==="
+echo
+
+# Get all insights from today
+cl feedback --json | jq --arg today "$TODAY" '
+  .data[] | 
+  select(.created_at | startswith($today)) |
+  {
+    title: .title,
+    severity: .severity,
+    status: .status,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.severity) | reverse'
+
+echo
+echo "=== Summary ==="
+cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today))) |
+  {
+    total: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    by_status: group_by(.status) | map({status: .[0].status, count: length})
+  }
+'
+```
+
+### Weekly Summary Report
+
+Generate a comprehensive weekly report:
+
+```bash
+#!/bin/bash
+# weekly-summary.sh
+
+# Get date range for this week
+START_DATE=$(date -d "last monday" +%Y-%m-%d)
+END_DATE=$(date -d "last sunday" +%Y-%m-%d)
+
+echo "=== Weekly Insights Summary - $START_DATE to $END_DATE ==="
+echo
+
+# Get insights from this week
+cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
+  .data[] | 
+  select(.created_at >= $start and .created_at <= $end) |
+  {
+    title: .title,
+    severity: .severity,
+    status: .status,
+    pain_point: .pain_point,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.severity) | reverse'
+
+echo
+echo "=== Weekly Statistics ==="
+cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
+  .data | 
+  map(select(.created_at >= $start and .created_at <= $end)) |
+  {
+    total_insights: length,
+    severity_breakdown: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    status_breakdown: group_by(.status) | map({status: .[0].status, count: length}),
+    top_pain_points: group_by(.pain_point) | map({pain_point: .[0].pain_point, count: length}) | sort_by(.count) | reverse | .[0:5]
+  }
+'
+```
+
+### Processing Performance Monitor
+
+Track processing times and performance:
+
+```bash
+#!/bin/bash
+# performance-monitor.sh
+
+echo "=== Processing Performance Report ==="
+echo
+
+# Get processing times
+cl ingest --json | jq '.data[] | {
+  id: .id,
+  title: .title,
+  status: .status,
+  created: .created_at,
+  processing_time: (
+    if .status == "completed" then
+      (.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - 
+      (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)
+    else
+      "processing"
+    end
+  )
+}'
+
+echo
+echo "=== Summary Statistics ==="
+cl ingest --json | jq '
+  .data |
+  {
+    total: length,
+    completed: map(select(.status == "completed")) | length,
+    processing: map(select(.status == "processing")) | length,
+    failed: map(select(.status == "failed")) | length,
+    average_processing_time: (
+      map(select(.status == "completed")) |
+      map((.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)) |
+      if length > 0 then add / length else 0 end
+    )
+  }
+'
+```
+
+### Customer Sentiment Tracker
+
+Track sentiment for specific customers:
+
+```bash
+#!/bin/bash
+# sentiment-tracker.sh
+
+CUSTOMER_ID="$1"
+
+if [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <customer-id>"
+  exit 1
+fi
+
+echo "=== Sentiment Analysis for Customer: $CUSTOMER_ID ==="
+echo
+
+# Get all insights for this customer
+cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data[] | 
+  select(.customer_id == $customer) |
+  {
+    title: .title,
+    sentiment: .sentiment,
+    severity: .severity,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.created) | reverse'
+
+echo
+echo "=== Sentiment Summary ==="
+cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data | 
+  map(select(.customer_id == $customer)) |
+  {
+    total_insights: length,
+    sentiment_breakdown: group_by(.sentiment) | map({sentiment: .[0].sentiment, count: length}),
+    severity_breakdown: group_by(.severity) | map({severity: .[0].severity, count: length})
+  }
+'
+```
+
+## 🚨 Alert Scripts
+
+### High Severity Alert
+
+Alert on high-severity insights:
+
+```bash
+#!/bin/bash
+# high-severity-alert.sh
+
+# Get high-severity insights from today
+TODAY=$(date +%Y-%m-%d)
+HIGH_SEVERITY_COUNT=$(cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical"))) |
+  length
+')
+
+if [ "$HIGH_SEVERITY_COUNT" -gt 0 ]; then
+  echo "🚨 ALERT: $HIGH_SEVERITY_COUNT high-severity insights found today!"
+  echo
+  
+  # Show details
+  cl feedback --json | jq --arg today "$TODAY" '
+    .data[] | 
+    select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical")) |
+    {
+      title: .title,
+      severity: .severity,
+      pain_point: .pain_point,
+      created: .created_at
+    }
+  '
+else
+  echo "✅ No high-severity insights today"
+fi
+```
+
+### Deal Blocker Alert
+
+Alert on insights that might block deals:
+
+```bash
+#!/bin/bash
+# deal-blocker-alert.sh
+
+# Get deal blocker insights
+DEAL_BLOCKERS=$(cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)')
+
+if [ "$(echo "$DEAL_BLOCKERS" | jq -s 'length')" -gt 0 ]; then
+  echo "🚨 DEAL BLOCKER ALERT: Critical insights that may impact deals!"
+  echo
+  
+  echo "$DEAL_BLOCKERS" | jq -s '.[] | {
+    title: .title,
+    pain_point: .pain_point,
+    severity: .severity,
+    created: .created_at
+  }'
+else
+  echo "✅ No deal blocker insights found"
+fi
+```
+
+## 🔄 Cron Job Setup
+
+### Daily Monitoring
+
+Set up daily monitoring with cron:
+
+```bash
+# Add to crontab for daily insights report at 9 AM
+echo "0 9 * * * /path/to/daily-insights.sh >> /var/log/closedloop-daily.log 2>&1" | crontab -
+
+# Add to crontab for high-severity alerts at 10 AM
+echo "0 10 * * * /path/to/high-severity-alert.sh >> /var/log/closedloop-alerts.log 2>&1" | crontab -
+
+# Add to crontab for weekly summary on Mondays at 9 AM
+echo "0 9 * * 1 /path/to/weekly-summary.sh >> /var/log/closedloop-weekly.log 2>&1" | crontab -
+```
+
+### Real-time Monitoring
+
+Set up real-time monitoring:
+
+```bash
+# Monitor for new insights every 5 minutes
+echo "*/5 * * * * /path/to/real-time-monitor.sh >> /var/log/closedloop-realtime.log 2>&1" | crontab -
+```
+
+## 🛠️ Utility Scripts
+
+### Configuration Validator
+
+Validate CLI configuration:
+
+```bash
+#!/bin/bash
+# validate-config.sh
+
+echo "=== ClosedLoop AI CLI Configuration Validator ==="
+echo
+
+# Check if API key is configured
+if ! cl config --json | jq -e '.data.configured' > /dev/null; then
+  echo "❌ No API key configured"
+  echo "Run: cl config set --api-key <your-key>"
+  exit 1
+fi
+
+echo "✅ API key is configured"
+
+# Test API key by making a simple request
+if cl feedback --json > /dev/null 2>&1; then
+  echo "✅ API key is valid and working"
+else
+  echo "❌ API key is invalid or expired"
+  echo "Get a new key from: http://app.closedloop.sh"
+  exit 1
+fi
+
+# Check team website configuration
+WEBSITE=$(cl team website --json | jq -r '.data.website // empty')
+if [ -n "$WEBSITE" ]; then
+  echo "✅ Team website configured: $WEBSITE"
+else
+  echo "⚠️  Team website not configured"
+  echo "Run: cl team website \"https://yourproduct.com\""
+fi
+
+echo
+echo "✅ Configuration validation complete"
+```
+
+### Data Export Script
+
+Export insights to CSV:
+
+```bash
+#!/bin/bash
+# export-insights.sh
+
+OUTPUT_FILE="${1:-insights-export.csv}"
+
+echo "=== Exporting insights to $OUTPUT_FILE ==="
+
+# Create CSV header
+echo "ID,Title,Severity,Status,Pain Point,Created,Updated" > "$OUTPUT_FILE"
+
+# Export data
+cl feedback --json | jq -r '.data[] | [
+  .id,
+  .title,
+  .severity,
+  .status,
+  .pain_point,
+  .created_at,
+  .updated_at
+] | @csv' >> "$OUTPUT_FILE"
+
+echo "✅ Export complete: $OUTPUT_FILE"
+echo "Total insights exported: $(wc -l < "$OUTPUT_FILE")"
+```
+
+## 📋 Usage Examples
+
+### Make Scripts Executable
+
+```bash
+# Make all scripts executable
+chmod +x *.sh
+
+# Or make individual scripts executable
+chmod +x process-feedback.sh
+chmod +x daily-insights.sh
+chmod +x high-severity-alert.sh
+```
+
+### Run Scripts
+
+```bash
+# Process single feedback file
+./process-feedback.sh feedback.txt customer-123
+
+# Process batch of feedback files
+./batch-process.sh /path/to/feedback/directory
+
+# Generate daily report
+./daily-insights.sh
+
+# Check for high-severity alerts
+./high-severity-alert.sh
+
+# Validate configuration
+./validate-config.sh
+```
+
+<Card
+  title="Ready for Integrations?"
+  icon="plug"
+  href="/cli/integrations"
+>
+  Learn how to integrate ClosedLoop AI CLI with your existing tools
+</Card>

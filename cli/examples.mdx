@@ -121,309 +121,72 @@ cl ingest "The new pricing is confusing and we're not sure what we're paying for
 cl feedback --json | jq '.data[] | select(.title | contains("pricing")) | {title, sentiment, business_impact}'
 ```
 
-## 🔧 Automation Scripts
+## 🔧 Automation & Scripts
 
-### Automated Feedback Processing
+For detailed automation scripts and batch processing examples, see the **[Automation Scripts](/cli/scripts)** page.
 
-Create a script to automatically process feedback files:
+### Quick Script Examples
 
 ```bash
-#!/bin/bash
-# process-feedback.sh
+# Process feedback file
+./process-feedback.sh feedback.txt customer-123
 
-FEEDBACK_FILE="$1"
-CUSTOMER_ID="$2"
+# Batch process directory
+./batch-process.sh /path/to/feedback/directory
 
-if [ -z "$FEEDBACK_FILE" ] || [ -z "$CUSTOMER_ID" ]; then
-  echo "Usage: $0 <feedback-file> <customer-id>"
-  exit 1
-fi
-
-# Read feedback content
-CONTENT=$(cat "$FEEDBACK_FILE")
-
-# Ingest feedback
-echo "Processing feedback for customer $CUSTOMER_ID..."
-ID=$(cl ingest "$CONTENT" --customer "$CUSTOMER_ID" --json | jq -r '.id')
-
-if [ "$ID" != "null" ]; then
-  echo "Feedback ingested successfully: $ID"
-  
-  # Wait for processing
-  echo "Waiting for AI analysis..."
-  cl ingest "$ID" --wait
-  
-  # Show results
-  echo "Analysis complete. View insights:"
-  cl feedback
-else
-  echo "Failed to ingest feedback"
-  exit 1
-fi
+# Generate daily report
+./daily-insights.sh
 ```
 
-### Batch Processing Script
+## 🎨 Integrations
 
-Process multiple feedback files at once:
+For comprehensive integration examples with Slack, Jira, GitHub, Discord, and more, see the **[Integrations](/cli/integrations)** page.
 
-```bash
-#!/bin/bash
-# batch-process.sh
-
-FEEDBACK_DIR="$1"
-
-if [ -z "$FEEDBACK_DIR" ]; then
-  echo "Usage: $0 <feedback-directory>"
-  exit 1
-fi
-
-# Process all .txt files in the directory
-for file in "$FEEDBACK_DIR"/*.txt; do
-  if [ -f "$file" ]; then
-    echo "Processing: $(basename "$file")"
-    
-    # Extract customer ID from filename (e.g., "customer-123-feedback.txt")
-    CUSTOMER_ID=$(basename "$file" | sed 's/-feedback\.txt$//')
-    
-    # Process the feedback
-    ./process-feedback.sh "$file" "$CUSTOMER_ID"
-    
-    echo "---"
-  fi
-done
-```
-
-### Daily Insights Report
-
-Generate a daily report of insights:
+### Quick Integration Examples
 
 ```bash
-#!/bin/bash
-# daily-insights.sh
+# Send insights to Slack
+./slack-insights.sh $SLACK_WEBHOOK_URL
 
-# Get today's insights
-TODAY=$(date +%Y-%m-%d)
+# Create Jira tickets
+./jira-integration.sh $JIRA_URL $JIRA_USER $JIRA_TOKEN
 
-echo "=== Daily Insights Report - $TODAY ==="
-echo
-
-# Get all insights from today
-cl feedback --json | jq --arg today "$TODAY" '
-  .data[] | 
-  select(.created_at | startswith($today)) |
-  {
-    title: .title,
-    severity: .severity,
-    status: .status,
-    created: .created_at
-  }
-' | jq -s 'sort_by(.severity) | reverse'
-
-echo
-echo "=== Summary ==="
-cl feedback --json | jq --arg today "$TODAY" '
-  .data | 
-  map(select(.created_at | startswith($today))) |
-  {
-    total: length,
-    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
-    by_status: group_by(.status) | map({status: .[0].status, count: length})
-  }
-'
-```
-
-## 🎨 Integration Examples
-
-### Slack Integration
-
-Send insights to Slack channel:
-
-```bash
-#!/bin/bash
-# slack-insights.sh
-
-SLACK_WEBHOOK_URL="$1"
-
-if [ -z "$SLACK_WEBHOOK_URL" ]; then
-  echo "Usage: $0 <slack-webhook-url>"
-  exit 1
-fi
-
-# Get latest insights
-INSIGHTS=$(cl feedback --json | jq '.data[0:5]')
-
-# Format for Slack
-MESSAGE=$(echo "$INSIGHTS" | jq -r '
-  "🚀 *Latest Customer Insights:*\n\n" +
-  (.[] | 
-    "• *" + .title + "*\n" +
-    "  Status: " + .status + "\n" +
-    "  Severity: " + .severity + "\n\n"
-  )
-')
-
-# Send to Slack
-curl -X POST -H 'Content-type: application/json' \
-  --data "{\"text\":\"$MESSAGE\"}" \
-  "$SLACK_WEBHOOK_URL"
-```
-
-### Jira Integration
-
-Create Jira tickets from high-severity insights:
-
-```bash
-#!/bin/bash
-# jira-integration.sh
-
-JIRA_URL="$1"
-JIRA_USER="$2"
-JIRA_TOKEN="$3"
-
-if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ]; then
-  echo "Usage: $0 <jira-url> <jira-user> <jira-token>"
-  exit 1
-fi
-
-# Get high-severity insights
-cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
-  TITLE=$(echo "$insight" | jq -r '.title')
-  CONTENT=$(echo "$insight" | jq -r '.content')
-  INSIGHT_ID=$(echo "$insight" | jq -r '.id')
-  
-  # Create Jira ticket
-  curl -X POST \
-    -H "Content-Type: application/json" \
-    -u "$JIRA_USER:$JIRA_TOKEN" \
-    "$JIRA_URL/rest/api/2/issue" \
-    -d "{
-      \"fields\": {
-        \"project\": {\"key\": \"PROD\"},
-        \"summary\": \"Customer Insight: $TITLE\",
-        \"description\": \"$CONTENT\n\nInsight ID: $INSIGHT_ID\",
-        \"issuetype\": {\"name\": \"Task\"},
-        \"priority\": {\"name\": \"High\"}
-      }
-    }"
-done
+# Send to Discord
+./discord-integration.sh $DISCORD_WEBHOOK_URL
 ```
 
 ## 📈 Monitoring & Analytics
 
-### Track Processing Performance
+For comprehensive monitoring, analytics, and alerting examples, see the **[Monitoring & Analytics](/cli/monitoring)** page.
+
+### Quick Monitoring Examples
 
 ```bash
-#!/bin/bash
-# performance-monitor.sh
+# Track processing performance
+./performance-monitor.sh
 
-echo "=== Processing Performance Report ==="
-echo
+# Monitor customer sentiment
+./sentiment-tracker.sh customer-123
 
-# Get processing times
-cl ingest --json | jq '.data[] | {
-  id: .id,
-  title: .title,
-  status: .status,
-  created: .created_at,
-  processing_time: (
-    if .status == "completed" then
-      (.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - 
-      (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)
-    else
-      "processing"
-    end
-  )
-}'
-
-echo
-echo "=== Summary Statistics ==="
-cl ingest --json | jq '
-  .data |
-  {
-    total: length,
-    completed: map(select(.status == "completed")) | length,
-    processing: map(select(.status == "processing")) | length,
-    failed: map(select(.status == "failed")) | length
-  }
-'
-```
-
-### Customer Sentiment Tracking
-
-```bash
-#!/bin/bash
-# sentiment-tracker.sh
-
-CUSTOMER_ID="$1"
-
-if [ -z "$CUSTOMER_ID" ]; then
-  echo "Usage: $0 <customer-id>"
-  exit 1
-fi
-
-echo "=== Sentiment Analysis for Customer: $CUSTOMER_ID ==="
-echo
-
-# Get all insights for this customer
-cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
-  .data[] | 
-  select(.customer_id == $customer) |
-  {
-    title: .title,
-    sentiment: .sentiment,
-    severity: .severity,
-    created: .created_at
-  }
-' | jq -s 'sort_by(.created) | reverse'
-
-echo
-echo "=== Sentiment Summary ==="
-cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
-  .data | 
-  map(select(.customer_id == $customer)) |
-  {
-    total_insights: length,
-    sentiment_breakdown: group_by(.sentiment) | map({sentiment: .[0].sentiment, count: length}),
-    severity_breakdown: group_by(.severity) | map({severity: .[0].severity, count: length})
-  }
-'
+# Generate daily dashboard
+./daily-dashboard.sh
 ```
 
 ## 🎯 Best Practices
 
-### 1. Consistent Naming
+For comprehensive best practices covering configuration, data management, automation, security, and more, see the **[Best Practices](/cli/best-practices)** page.
+
+### Quick Best Practices
 
 ```bash
-# Good - descriptive titles
-cl ingest "Mobile app crashes on iOS 17" --title "iOS 17 Compatibility Issue"
+# Use descriptive titles
+cl ingest "Content" --title "Descriptive Title"
 
-# Bad - vague titles  
-cl ingest "App broken" --title "Bug"
-```
+# Include rich context
+cl ingest "Content" --customer "customer-123" --name "John Doe" --email "john@company.com"
 
-### 2. Rich Context
-
-```bash
-# Good - include all relevant context
-cl ingest "The new pricing model is confusing" \
-  --title "Pricing Model Feedback" \
-  --customer "enterprise-123" \
-  --name "John Smith" \
-  --email "john@company.com" \
-  --url "https://support.company.com/ticket/456"
-
-# Bad - minimal context
-cl ingest "Pricing confusing"
-```
-
-### 3. Regular Monitoring
-
-```bash
-# Set up daily monitoring
+# Set up monitoring
 echo "0 9 * * * /path/to/daily-insights.sh" | crontab -
-
-# Weekly sentiment reports
-echo "0 9 * * 1 /path/to/sentiment-tracker.sh customer-123" | crontab -
 ```
 
 <Card
