@@ -52,7 +52,7 @@ info:
     
     ## 🛠️ API Features
     
-    - **📝 Feedback Management**: Create, list, and manage customer feedback
+    - **📝 Insights Management**: Create, list, and manage AI-processed insights
     - **👥 Team Management**: Manage team settings and website configurations
     - **📈 Usage Tracking**: Monitor API usage and credit consumption
     - **🔗 Integration Management**: Manage connected platforms and services
@@ -87,7 +87,7 @@ info:
     ### Get AI-Processed Insights
     ```bash
     curl -H "Authorization: Bearer YOUR_API_KEY" \
-         "https://mcp.closedloop.sh/feedbacks?limit=10&status=open"
+         "https://mcp.closedloop.sh/insights?limit=10&status=open"
     ```
     
     ### Check Integration Status
@@ -275,19 +275,19 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /feedbacks:
+  /insights:
     get:
       tags:
-        - Feedback
-      summary: List AI-Processed Feedback
+        - Insights
+      summary: List AI-Processed Insights
       description: |
-        **Get all AI-analyzed customer feedback** with powerful filtering options.
+        **Get all AI-analyzed customer insights** with powerful filtering options.
         
-        This endpoint returns structured feedback data that has been processed by our AI,
+        This endpoint returns structured insights data that has been processed by our AI,
         including customer insights, sentiment analysis, and prioritized recommendations.
         
         **Perfect for:**
-        - Building feedback dashboards
+        - Building insights dashboards
         - Creating product roadmaps
         - Tracking customer sentiment trends
         - Generating reports for stakeholders
@@ -297,7 +297,7 @@ paths:
         - Pain points and feature requests
         - Competitive gaps and willingness to pay
         - Use cases and feature areas
-      operationId: listFeedbacks
+      operationId: listInsights
       parameters:
         - name: page
           in: query
@@ -314,33 +314,33 @@ paths:
             minimum: 1
             maximum: 100
             default: 20
-          description: Number of feedback items to return
+          description: Number of insights items to return
         - name: date_from
           in: query
           schema:
             type: string
             format: date
-          description: Start date for feedback (YYYY-MM-DD)
+          description: Start date for insights (YYYY-MM-DD)
         - name: date_to
           in: query
           schema:
             type: string
             format: date
-          description: End date for feedback (YYYY-MM-DD)
+          description: End date for insights (YYYY-MM-DD)
         - name: severity
           in: query
           schema:
             type: string
             enum: [critical, high, medium, low, all]
             default: all
-          description: Filter by feedback severity level
+          description: Filter by insights severity level
         - name: status
           in: query
           schema:
             type: string
             enum: [open, closed, all]
             default: all
-          description: Filter by feedback status
+          description: Filter by insights status
         - name: source_id
           in: query
           schema:
@@ -370,7 +370,7 @@ paths:
           description: Sort order
       responses:
         '200':
-          description: List of AI-processed feedback items
+          description: List of AI-processed insights items
           content:
             application/json:
               schema:
@@ -382,10 +382,10 @@ paths:
                   data:
                     type: object
                     properties:
-                      feedbacks:
+                      insights:
                         type: array
                         items:
-                          $ref: '#/components/schemas/ProcessedFeedback'
+                          $ref: '#/components/schemas/ProcessedInsight'
                       pagination:
                         $ref: '#/components/schemas/Pagination'
         '400':
@@ -395,13 +395,13 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /feedbacks/{id}:
+  /insights/{id}:
     get:
       tags:
-        - Feedback
-      summary: Get AI-Processed Feedback Detail
-      description: Get detailed information about a specific AI-processed feedback item
-      operationId: getFeedbackDetail
+        - Insights
+      summary: Get AI-Processed Insight Detail
+      description: Get detailed information about a specific AI-processed insight item
+      operationId: getInsightDetail
       parameters:
         - name: id
           in: path
@@ -409,10 +409,10 @@ paths:
           schema:
             type: string
             format: uuid
-          description: Feedback ID
+          description: Insight ID
       responses:
         '200':
-          description: AI-processed feedback details
+          description: AI-processed insight details
           content:
             application/json:
               schema:
@@ -422,7 +422,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/ProcessedFeedbackDetail'
+                    $ref: '#/components/schemas/ProcessedInsightDetail'
         '404':
           $ref: '#/components/responses/NotFound'
         '401':
@@ -673,7 +673,7 @@ components:
       description: "API key for authentication (format: Bearer YOUR_API_KEY)"
 
   schemas:
-    ProcessedFeedback:
+    ProcessedInsight:
       type: object
       required:
         - id
@@ -688,11 +688,11 @@ components:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
-          description: Unique feedback identifier
+          description: Unique insight identifier
         title:
           type: string
           example: "Users want dark mode toggle"
-          description: AI-generated feedback title
+          description: AI-generated insight title
         timestamp:
           type: string
           format: date-time
@@ -712,18 +712,18 @@ components:
           type: string
           enum: [open, closed]
           example: "open"
-          description: Current feedback status
+          description: Current insight status
         source:
           type: string
           example: "gong_call_abc123"
-          description: Source of the feedback (call ID, survey, etc.)
+          description: Source of the insight (call ID, survey, etc.)
         created_at:
           type: string
           format: date-time
           example: "2025-01-27T10:30:00Z"
-          description: When the feedback was processed
+          description: When the insight was processed
 
-    ProcessedFeedbackDetail:
+    ProcessedInsightDetail:
       type: object
       required:
         - id
@@ -738,11 +738,11 @@ components:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
-          description: Unique feedback identifier
+          description: Unique insight identifier
         title:
           type: string
           example: "Users want dark mode toggle"
-          description: AI-generated feedback title
+          description: AI-generated insight title
         timestamp:
           type: string
           format: date-time
@@ -757,7 +757,7 @@ components:
         is_deal_blocker:
           type: boolean
           example: false
-          description: Whether this feedback blocks deals
+          description: Whether this insight blocks deals
         pain_point:
           type: string
           example: "Users struggle with bright interface in low light"
@@ -777,11 +777,11 @@ components:
         use_case:
           type: string
           example: "Night-time usage and accessibility"
-          description: Primary use case for this feedback
+          description: Primary use case for this insight
         feature_area:
           type: string
           example: "UI/UX"
-          description: Feature area this feedback relates to
+          description: Feature area this insight relates to
         source_url:
           type: string
           format: uri
@@ -791,7 +791,7 @@ components:
           type: string
           format: date-time
           example: "2025-01-27T10:30:00Z"
-          description: When the feedback was processed
+          description: When the insight was processed
 
     SubmittedFeedback:
       type: object
@@ -1217,9 +1217,9 @@ components:
 
 tags:
   - name: Ingest
-    description: Submit and track raw customer feedback for AI processing
-  - name: Feedback
-    description: Feedback management operations
+    description: Submit and track raw customer data for AI processing
+  - name: Insights
+    description: AI-processed insights management operations
   - name: Team
     description: Team management operations
   - name: Usage

@@ -31,7 +31,7 @@
         ]
       },
       {
-        "tab": "API",
+        "tab": "API Reference",
         "groups": [
           {
             "group": "API Documentation",
@@ -46,7 +46,7 @@
         ]
       },
       {
-        "tab": "CLI",
+        "tab": "CLI Tool",
         "groups": [
           {
             "group": "Getting Started",
@@ -62,7 +62,7 @@
                 "group": "  Command Reference",
                 "pages": [
                   "cli/commands/ingest",
-                  "cli/commands/feedback",
+                  "cli/commands/insights",
                   "cli/commands/team",
                   "cli/commands/config"
                 ]
