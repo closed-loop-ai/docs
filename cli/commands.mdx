@@ -1,0 +1,353 @@
+---
+title: 'CLI Commands Reference'
+description: 'Complete reference for all ClosedLoop AI CLI commands'
+---
+
+## 📋 Command Overview
+
+The ClosedLoop AI CLI provides powerful commands for managing customer feedback analysis:
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `cl ingest` | Submit feedback for AI analysis | `cl ingest "Dashboard is confusing"` |
+| `cl feedback` | View AI-generated insights | `cl feedback` |
+| `cl team` | Manage team settings | `cl team website "https://example.com"` |
+| `cl config` | Configure API key | `cl config set --api-key <key>` |
+
+## 🔄 Ingest Commands
+
+### Submit Customer Feedback
+
+Transform raw customer feedback into structured insights:
+
+```bash
+# Basic ingestion
+cl ingest "The app crashes when I try to upload large files"
+
+# With metadata for better analysis
+cl ingest "Great product, love the new features!" \
+  --title "Positive Feedback" \
+  --customer "customer-456" \
+  --name "Jane Smith" \
+  --email "jane@example.com" \
+  --url "https://support.example.com/ticket/789"
+
+# Wait for AI analysis to complete
+cl ingest "Customer complaint about performance" --wait
+```
+
+### List Ingested Feedback
+
+```bash
+# Show all ingested feedback
+cl ingest
+
+# With pagination
+cl ingest --page 2 --limit 10
+
+# JSON output for scripting
+cl ingest --json
+```
+
+### View Specific Feedback
+
+```bash
+# Show detailed feedback information
+cl ingest 74e3dd87-878f-41cf-8e5a-87527bbf7770
+
+# JSON output
+cl ingest 74e3dd87-878f-41cf-8e5a-87527bbf7770 --json
+```
+
+### Ingest Parameters
+
+<ParamField path="content" type="string" required>
+  Customer feedback content to analyze
+</ParamField>
+
+<ParamField path="--title" type="string">
+  Title for the feedback
+</ParamField>
+
+<ParamField path="--customer" type="string">
+  Customer identifier
+</ParamField>
+
+<ParamField path="--name" type="string">
+  Name of person who provided feedback
+</ParamField>
+
+<ParamField path="--email" type="string">
+  Email of person who provided feedback
+</ParamField>
+
+<ParamField path="--url" type="string">
+  Source URL (support ticket, survey, etc.)
+</ParamField>
+
+<ParamField path="--wait" type="flag">
+  Wait for processing to complete
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output in JSON format
+</ParamField>
+
+<ParamField path="--page" type="number">
+  Page number for listing (default: 1)
+</ParamField>
+
+<ParamField path="--limit" type="number">
+  Items per page (max 100, default: 20)
+</ParamField>
+
+## 📊 Feedback Commands
+
+### List AI-Generated Insights
+
+View structured insights created by AI analysis:
+
+```bash
+# Show all insights
+cl feedback
+
+# With pagination
+cl feedback --page 2 --limit 5
+
+# JSON output for scripting
+cl feedback --json
+```
+
+### View Specific Insight
+
+```bash
+# Show detailed insight information
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d
+
+# JSON output
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
+```
+
+### Feedback Parameters
+
+<ParamField path="id" type="string">
+  Insight ID for detailed view
+</ParamField>
+
+<ParamField path="--page" type="number">
+  Page number for listing (default: 1)
+</ParamField>
+
+<ParamField path="--limit" type="number">
+  Items per page (max 100, default: 20)
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output in JSON format
+</ParamField>
+
+## 👥 Team Commands
+
+### Manage Team Website
+
+**Why set your product website?** ClosedLoop AI uses your product URL to learn about your product features, competitors, pricing, and positioning. This enables more accurate feedback attribution and product-specific insights.
+
+```bash
+# Show current website
+cl team website
+
+# Update team website
+cl team website "https://example.com"
+
+# JSON output
+cl team website --json
+```
+
+### Team Parameters
+
+<ParamField path="website" type="string">
+  Team website URL (must include http:// or https://)
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output in JSON format
+</ParamField>
+
+## ⚙️ Configuration Commands
+
+### Set API Key
+
+```bash
+cl config set --api-key your-api-key-here
+```
+
+### View Configuration
+
+```bash
+# Show current configuration
+cl config
+
+# JSON output
+cl config --json
+```
+
+### Configuration Parameters
+
+<ParamField path="--api-key" type="string">
+  Your ClosedLoop AI API key
+</ParamField>
+
+<ParamField path="--json" type="flag">
+  Output in JSON format
+</ParamField>
+
+## 🔧 General Commands
+
+### Version Information
+
+```bash
+cl --version
+# Output: 0.2.3
+
+cl version
+# Output: 0.2.3
+```
+
+### Help
+
+```bash
+# Main help
+cl --help
+
+# Command-specific help
+cl help ingest
+cl help feedback
+cl help team
+```
+
+## 📤 Output Formats
+
+### Table Format (Default)
+
+```
+┌─────────────────────────────────────┬─────────────────────────────┬─────────────┬─────────────┐
+│ ID                                  │ Title                      │ Status      │ Created     │
+├─────────────────────────────────────┼─────────────────────────────┼─────────────┼─────────────┤
+│ 74e3dd87-878f-41cf-8e5a-87527bbf7770 │ Dashboard UX Issues        │ completed   │ 2024-01-15  │
+│ 2ea8f556-052b-4f5c-bf86-833780b3d00d │ Performance Problems       │ processing  │ 2024-01-15  │
+└─────────────────────────────────────┴─────────────────────────────┴─────────────┴─────────────┘
+```
+
+### JSON Format
+
+```json
+{
+  "data": [
+    {
+      "id": "74e3dd87-878f-41cf-8e5a-87527bbf7770",
+      "title": "Dashboard UX Issues",
+      "content": "The new dashboard is confusing...",
+      "status": "completed",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "pages": 1
+  }
+}
+```
+
+## ❌ Error Handling
+
+### Common Error Messages
+
+<Error>
+**No API Key**
+```
+🔑 No API key configured!
+
+To get started:
+1. Go to https://closedloop.sh
+2. Sign up for a free account
+3. Generate your API key
+4. Run: cl config set --api-key <your-key>
+```
+</Error>
+
+<Error>
+**Invalid API Key**
+```
+❌ Invalid API key. Get your free API key at https://closedloop.sh
+```
+</Error>
+
+<Error>
+**Validation Error**
+```
+❌ Validation Error: Content cannot be empty
+```
+</Error>
+
+### Error Codes
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `NO_API_KEY` | No API key configured | Run `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `VALIDATION_ERROR` | Input validation failed | Check input format and requirements |
+| `API_ERROR` | Server error | Check internet connection, try again later |
+| `RATE_LIMITED` | Too many requests | Wait and retry |
+| `NOT_FOUND` | Resource not found | Check ID is correct |
+
+## 🎯 Best Practices
+
+### 1. Use Descriptive Titles
+
+```bash
+# Good
+cl ingest "The app crashes when uploading files" --title "File Upload Crash"
+
+# Bad
+cl ingest "App broken" --title "Issue"
+```
+
+### 2. Include Customer Context
+
+```bash
+# Good
+cl ingest "Feature request" --customer "enterprise-123" --name "John Doe"
+
+# Bad
+cl ingest "Feature request"
+```
+
+### 3. Use JSON for Scripting
+
+```bash
+# Good
+cl feedback --json | jq '.data[0].title'
+
+# Bad
+cl feedback | grep "Title"
+```
+
+### 4. Handle Errors Gracefully
+
+```bash
+#!/bin/bash
+if ! cl ingest "$1" --wait; then
+  echo "Failed to ingest feedback"
+  exit 1
+fi
+```
+
+<Card
+  title="Ready for Examples?"
+  icon="play"
+  href="/cli/examples"
+>
+  See real-world usage examples and workflows
+</Card>

@@ -49,18 +49,16 @@
         "tab": "CLI",
         "groups": [
           {
-            "group": "Installation & Setup",
+            "group": "Getting Started",
             "pages": [
-              "cli/installation",
-              "cli/authentication"
+              "cli/installation"
             ]
           },
           {
-            "group": "Commands",
+            "group": "Commands & Usage",
             "pages": [
-              "cli/commands/feedback",
-              "cli/commands/integrations",
-              "cli/commands/analytics"
+              "cli/commands",
+              "cli/examples"
             ]
           }
         ]

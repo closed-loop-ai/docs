@@ -1,0 +1,435 @@
+---
+title: 'Examples & Workflows'
+description: 'Real-world examples and workflows for ClosedLoop AI CLI'
+---
+
+## 🎯 Common Workflows
+
+### Basic Feedback Analysis Workflow
+
+The most common workflow for analyzing customer feedback:
+
+```bash
+# 1. Configure your API key
+cl config set --api-key your-api-key-here
+
+# 2. Set your product website (helps AI understand your product)
+cl team website "https://yourproduct.com"
+
+# 3. Ingest customer feedback
+cl ingest "The new dashboard is confusing and hard to navigate"
+
+# 4. Wait for AI analysis (optional)
+cl ingest "Customer complaint about performance" --wait
+
+# 5. View AI-generated insights
+cl feedback
+
+# 6. Get detailed analysis of specific insight
+cl feedback <insight-id>
+```
+
+### Advanced Feedback Ingestion
+
+For comprehensive feedback analysis with full context:
+
+```bash
+# Ingest with complete metadata
+cl ingest "Great product, love the new features!" \
+  --title "Positive Customer Feedback" \
+  --customer "enterprise-123" \
+  --name "Jane Smith" \
+  --email "jane@example.com" \
+  --url "https://support.example.com/ticket/789"
+
+# List all ingested feedback with pagination
+cl ingest --page 1 --limit 20
+
+# Get JSON output for scripting
+cl feedback --json | jq '.data[0].title'
+```
+
+## 📊 Real-World Examples
+
+### Customer Success Team Workflow
+
+**Scenario**: Customer Success Manager analyzing support tickets
+
+```bash
+# Ingest support ticket feedback
+cl ingest "Customer is frustrated with the slow loading times on the mobile app" \
+  --title "Mobile Performance Issue" \
+  --customer "customer-456" \
+  --name "Sarah Johnson" \
+  --email "sarah@company.com" \
+  --url "https://support.yourcompany.com/ticket/12345"
+
+# Ingest follow-up feedback
+cl ingest "After the recent update, the app is much faster. Great work!" \
+  --title "Performance Improvement Feedback" \
+  --customer "customer-456" \
+  --name "Sarah Johnson" \
+  --email "sarah@company.com"
+
+# View all insights for this customer
+cl feedback --json | jq '.data[] | select(.customer_id == "customer-456")'
+```
+
+### Product Manager Workflow
+
+**Scenario**: Product Manager collecting feature requests
+
+```bash
+# Ingest feature request from user interview
+cl ingest "We really need a dark mode option. Our team works late hours and the bright interface is hard on the eyes" \
+  --title "Dark Mode Feature Request" \
+  --customer "enterprise-789" \
+  --name "Mike Chen" \
+  --email "mike@techcorp.com"
+
+# Ingest competitive feedback
+cl ingest "Our competitor just launched dark mode and our customers are asking when we'll have it too" \
+  --title "Competitive Pressure - Dark Mode" \
+  --customer "sales-team" \
+  --name "Alex Rodriguez" \
+  --email "alex@company.com"
+
+# View all dark mode related insights
+cl feedback --json | jq '.data[] | select(.title | contains("dark mode"))'
+```
+
+### Business Analyst Workflow
+
+**Scenario**: Business Analyst tracking customer sentiment trends
+
+```bash
+# Ingest positive feedback
+cl ingest "The new pricing model is much more transparent and fair. We're happy with the changes." \
+  --title "Pricing Model Feedback" \
+  --customer "customer-123" \
+  --name "Lisa Wang" \
+  --email "lisa@startup.com"
+
+# Ingest negative feedback
+cl ingest "The new pricing is confusing and we're not sure what we're paying for anymore" \
+  --title "Pricing Confusion" \
+  --customer "customer-456" \
+  --name "David Kim" \
+  --email "david@company.com"
+
+# Analyze all pricing-related feedback
+cl feedback --json | jq '.data[] | select(.title | contains("pricing")) | {title, sentiment, business_impact}'
+```
+
+## 🔧 Automation Scripts
+
+### Automated Feedback Processing
+
+Create a script to automatically process feedback files:
+
+```bash
+#!/bin/bash
+# process-feedback.sh
+
+FEEDBACK_FILE="$1"
+CUSTOMER_ID="$2"
+
+if [ -z "$FEEDBACK_FILE" ] || [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <feedback-file> <customer-id>"
+  exit 1
+fi
+
+# Read feedback content
+CONTENT=$(cat "$FEEDBACK_FILE")
+
+# Ingest feedback
+echo "Processing feedback for customer $CUSTOMER_ID..."
+ID=$(cl ingest "$CONTENT" --customer "$CUSTOMER_ID" --json | jq -r '.id')
+
+if [ "$ID" != "null" ]; then
+  echo "Feedback ingested successfully: $ID"
+  
+  # Wait for processing
+  echo "Waiting for AI analysis..."
+  cl ingest "$ID" --wait
+  
+  # Show results
+  echo "Analysis complete. View insights:"
+  cl feedback
+else
+  echo "Failed to ingest feedback"
+  exit 1
+fi
+```
+
+### Batch Processing Script
+
+Process multiple feedback files at once:
+
+```bash
+#!/bin/bash
+# batch-process.sh
+
+FEEDBACK_DIR="$1"
+
+if [ -z "$FEEDBACK_DIR" ]; then
+  echo "Usage: $0 <feedback-directory>"
+  exit 1
+fi
+
+# Process all .txt files in the directory
+for file in "$FEEDBACK_DIR"/*.txt; do
+  if [ -f "$file" ]; then
+    echo "Processing: $(basename "$file")"
+    
+    # Extract customer ID from filename (e.g., "customer-123-feedback.txt")
+    CUSTOMER_ID=$(basename "$file" | sed 's/-feedback\.txt$//')
+    
+    # Process the feedback
+    ./process-feedback.sh "$file" "$CUSTOMER_ID"
+    
+    echo "---"
+  fi
+done
+```
+
+### Daily Insights Report
+
+Generate a daily report of insights:
+
+```bash
+#!/bin/bash
+# daily-insights.sh
+
+# Get today's insights
+TODAY=$(date +%Y-%m-%d)
+
+echo "=== Daily Insights Report - $TODAY ==="
+echo
+
+# Get all insights from today
+cl feedback --json | jq --arg today "$TODAY" '
+  .data[] | 
+  select(.created_at | startswith($today)) |
+  {
+    title: .title,
+    severity: .severity,
+    status: .status,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.severity) | reverse'
+
+echo
+echo "=== Summary ==="
+cl feedback --json | jq --arg today "$TODAY" '
+  .data | 
+  map(select(.created_at | startswith($today))) |
+  {
+    total: length,
+    by_severity: group_by(.severity) | map({severity: .[0].severity, count: length}),
+    by_status: group_by(.status) | map({status: .[0].status, count: length})
+  }
+'
+```
+
+## 🎨 Integration Examples
+
+### Slack Integration
+
+Send insights to Slack channel:
+
+```bash
+#!/bin/bash
+# slack-insights.sh
+
+SLACK_WEBHOOK_URL="$1"
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+  echo "Usage: $0 <slack-webhook-url>"
+  exit 1
+fi
+
+# Get latest insights
+INSIGHTS=$(cl feedback --json | jq '.data[0:5]')
+
+# Format for Slack
+MESSAGE=$(echo "$INSIGHTS" | jq -r '
+  "🚀 *Latest Customer Insights:*\n\n" +
+  (.[] | 
+    "• *" + .title + "*\n" +
+    "  Status: " + .status + "\n" +
+    "  Severity: " + .severity + "\n\n"
+  )
+')
+
+# Send to Slack
+curl -X POST -H 'Content-type: application/json' \
+  --data "{\"text\":\"$MESSAGE\"}" \
+  "$SLACK_WEBHOOK_URL"
+```
+
+### Jira Integration
+
+Create Jira tickets from high-severity insights:
+
+```bash
+#!/bin/bash
+# jira-integration.sh
+
+JIRA_URL="$1"
+JIRA_USER="$2"
+JIRA_TOKEN="$3"
+
+if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ]; then
+  echo "Usage: $0 <jira-url> <jira-user> <jira-token>"
+  exit 1
+fi
+
+# Get high-severity insights
+cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+  TITLE=$(echo "$insight" | jq -r '.title')
+  CONTENT=$(echo "$insight" | jq -r '.content')
+  INSIGHT_ID=$(echo "$insight" | jq -r '.id')
+  
+  # Create Jira ticket
+  curl -X POST \
+    -H "Content-Type: application/json" \
+    -u "$JIRA_USER:$JIRA_TOKEN" \
+    "$JIRA_URL/rest/api/2/issue" \
+    -d "{
+      \"fields\": {
+        \"project\": {\"key\": \"PROD\"},
+        \"summary\": \"Customer Insight: $TITLE\",
+        \"description\": \"$CONTENT\n\nInsight ID: $INSIGHT_ID\",
+        \"issuetype\": {\"name\": \"Task\"},
+        \"priority\": {\"name\": \"High\"}
+      }
+    }"
+done
+```
+
+## 📈 Monitoring & Analytics
+
+### Track Processing Performance
+
+```bash
+#!/bin/bash
+# performance-monitor.sh
+
+echo "=== Processing Performance Report ==="
+echo
+
+# Get processing times
+cl ingest --json | jq '.data[] | {
+  id: .id,
+  title: .title,
+  status: .status,
+  created: .created_at,
+  processing_time: (
+    if .status == "completed" then
+      (.updated_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) - 
+      (.created_at | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime)
+    else
+      "processing"
+    end
+  )
+}'
+
+echo
+echo "=== Summary Statistics ==="
+cl ingest --json | jq '
+  .data |
+  {
+    total: length,
+    completed: map(select(.status == "completed")) | length,
+    processing: map(select(.status == "processing")) | length,
+    failed: map(select(.status == "failed")) | length
+  }
+'
+```
+
+### Customer Sentiment Tracking
+
+```bash
+#!/bin/bash
+# sentiment-tracker.sh
+
+CUSTOMER_ID="$1"
+
+if [ -z "$CUSTOMER_ID" ]; then
+  echo "Usage: $0 <customer-id>"
+  exit 1
+fi
+
+echo "=== Sentiment Analysis for Customer: $CUSTOMER_ID ==="
+echo
+
+# Get all insights for this customer
+cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data[] | 
+  select(.customer_id == $customer) |
+  {
+    title: .title,
+    sentiment: .sentiment,
+    severity: .severity,
+    created: .created_at
+  }
+' | jq -s 'sort_by(.created) | reverse'
+
+echo
+echo "=== Sentiment Summary ==="
+cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+  .data | 
+  map(select(.customer_id == $customer)) |
+  {
+    total_insights: length,
+    sentiment_breakdown: group_by(.sentiment) | map({sentiment: .[0].sentiment, count: length}),
+    severity_breakdown: group_by(.severity) | map({severity: .[0].severity, count: length})
+  }
+'
+```
+
+## 🎯 Best Practices
+
+### 1. Consistent Naming
+
+```bash
+# Good - descriptive titles
+cl ingest "Mobile app crashes on iOS 17" --title "iOS 17 Compatibility Issue"
+
+# Bad - vague titles  
+cl ingest "App broken" --title "Bug"
+```
+
+### 2. Rich Context
+
+```bash
+# Good - include all relevant context
+cl ingest "The new pricing model is confusing" \
+  --title "Pricing Model Feedback" \
+  --customer "enterprise-123" \
+  --name "John Smith" \
+  --email "john@company.com" \
+  --url "https://support.company.com/ticket/456"
+
+# Bad - minimal context
+cl ingest "Pricing confusing"
+```
+
+### 3. Regular Monitoring
+
+```bash
+# Set up daily monitoring
+echo "0 9 * * * /path/to/daily-insights.sh" | crontab -
+
+# Weekly sentiment reports
+echo "0 9 * * 1 /path/to/sentiment-tracker.sh customer-123" | crontab -
+```
+
+<Card
+  title="Need More Help?"
+  icon="help"
+  href="/cli/commands"
+>
+  Check the complete command reference for advanced usage
+</Card>

@@ -1,0 +1,167 @@
+---
+title: 'Installation & Setup'
+description: 'Get started with ClosedLoop AI CLI in minutes'
+---
+
+## 🚀 Quick Installation
+
+### Install Globally (Recommended)
+
+```bash
+npm install -g @closedloop-ai/cli
+```
+
+### Verify Installation
+
+```bash
+cl --version
+# Output: 0.2.3
+```
+
+<Note>
+  **Node.js Required**: Make sure you have Node.js 16+ installed. Check with `node --version`
+</Note>
+
+## 🔑 Get Your API Key
+
+1. **Sign up for free** at [https://closedloop.sh](https://closedloop.sh)
+2. **Generate your API key** from your dashboard
+3. **Configure the CLI**:
+
+```bash
+cl config set --api-key your-api-key-here
+```
+
+<Card
+  title="Free Tier Includes"
+  icon="gift"
+>
+  - **100,000 credits** every month
+  - **Unlimited feedback ingestion**
+  - **AI-powered analysis**
+  - **All CLI features**
+</Card>
+
+## ⚙️ Configuration
+
+### Set Your Product Website (Important!)
+
+Configure your product's website URL to help ClosedLoop understand your product context:
+
+```bash
+cl team website "https://yourproduct.com"
+```
+
+<Warning>
+**Why this matters:** ClosedLoop AI uses your product URL to learn about your product features, competitors, pricing, and positioning. This enables more accurate feedback attribution and product-specific insights.
+</Warning>
+
+### Check Configuration
+
+```bash
+cl config
+# Output:
+# ⚙️  Configuration:
+# ────────────────────────────────────────
+# API Key: ✓ Configured
+# Config File: /Users/username/.closedloop/config.json
+```
+
+## 🎯 First Steps
+
+### 1. Ingest Your First Feedback
+
+```bash
+cl ingest "The new dashboard is confusing and hard to navigate"
+```
+
+### 2. Wait for AI Analysis
+
+```bash
+cl ingest "Customer complaint about performance" --wait
+```
+
+### 3. View AI-Generated Insights
+
+```bash
+cl feedback
+```
+
+### 4. Get Detailed Analysis
+
+```bash
+cl feedback <insight-id>
+```
+
+## 🔧 Advanced Setup
+
+### Environment Variables (For CI/CD)
+
+Instead of using the config file, you can set your API key as an environment variable:
+
+```bash
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+```
+
+<Info>
+**When to use environment variables:**
+- CI/CD pipelines
+- Docker containers  
+- Server scripts
+- Multiple users on same machine
+</Info>
+
+### Local Installation (Development)
+
+```bash
+# Install locally
+npm install @closedloop-ai/cli
+
+# Use with npx
+npx cl --help
+```
+
+## 🛠️ Troubleshooting
+
+### CLI Not Found
+
+```bash
+# Check if installed globally
+npm list -g @closedloop-ai/cli
+
+# Reinstall if needed
+npm install -g @closedloop-ai/cli
+```
+
+### Permission Denied
+
+```bash
+# Fix npm permissions (macOS/Linux)
+sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
+
+# Or use a Node version manager like nvm
+```
+
+### API Key Not Working
+
+```bash
+# Check configuration
+cl config
+
+# Reset API key
+cl config set --api-key your-new-key-here
+```
+
+## 📚 Next Steps
+
+- **[CLI Commands](/cli/commands)** - Complete command reference
+- **[Examples & Workflows](/cli/examples)** - Real-world usage examples
+- **[API Reference](/api-reference/introduction)** - Direct API access
+
+<Card
+  title="Ready to Get Started?"
+  icon="rocket"
+  href="/cli/commands"
+>
+  Explore all CLI commands and start analyzing customer feedback
+</Card>
