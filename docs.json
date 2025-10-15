@@ -104,7 +104,8 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "dark": "/logo/dark.svg",
+    "text": "ClosedLoop AI"
   },
   "navbar": {
     "links": [
