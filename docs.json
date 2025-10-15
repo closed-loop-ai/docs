@@ -47,6 +47,17 @@
         ]
       },
       {
+        "tab": "Security",
+        "groups": [
+          {
+            "group": "Security & Compliance",
+            "pages": [
+              "security/overview"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "CLI Tool",
         "groups": [
           {
