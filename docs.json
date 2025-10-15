@@ -68,10 +68,15 @@
                 ]
               },
               "cli/examples",
+              "cli/best-practices"
+            ]
+          },
+          {
+            "group": "Automation",
+            "pages": [
               "cli/scripts",
               "cli/integrations",
-              "cli/monitoring",
-              "cli/best-practices"
+              "cli/monitoring"
             ]
           }
         ]
