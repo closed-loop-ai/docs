@@ -38,6 +38,10 @@
             "pages": [
               "api-reference/introduction"
             ]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "api-reference/openapi.yaml"
           }
         ]
       },
