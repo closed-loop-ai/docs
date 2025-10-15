@@ -1,33 +1,85 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Reference'
+description: 'ClosedLoop AI API documentation for customer feedback automation'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to the ClosedLoop AI API
 
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+The ClosedLoop AI API provides powerful endpoints for managing customer feedback, integrations, and AI-powered insights. Our API is designed to help you automate the collection, analysis, and routing of customer feedback from various sources.
 
 <Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+  title="ClosedLoop AI API Endpoints"
+  icon="api"
+  href="https://github.com/closed-loop-ai/closedloop/blob/main/docs/api-reference/openapi.yaml"
 >
-  View the OpenAPI specification file
+  View the complete OpenAPI specification
 </Card>
+
+## What is the ClosedLoop AI API?
+
+The **ClosedLoop AI API** is the brain behind customer feedback automation. It automatically extracts actionable insights from your sales calls, surveys, and customer interactions, then routes them directly to your product team.
+
+**Think of it as your AI-powered feedback translator** - it listens to every customer conversation, understands what they really want, and turns it into structured, actionable product insights.
+
+## Key Features
+
+### 📝 **Feedback Management**
+- Submit raw customer feedback for AI processing
+- Retrieve AI-analyzed insights with severity levels
+- Track feedback status and processing pipeline
+
+### 🔗 **Integration Management**
+- Connect with 40+ platforms (Gong, Typeform, Salesforce, etc.)
+- Webhook endpoints for real-time data ingestion
+- HMAC-secured webhook authentication
+
+### 👥 **Team Management**
+- Manage team settings and website configurations
+- Track API usage and credit consumption
+- Monitor integration health and status
+
+### 💬 **Chat Integration**
+- Frontend chat functionality for AI interactions
+- Conversation management and message history
+- AI-powered response generation
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints (except health checks) require authentication via API key in the `Authorization` header.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" https://mcp.closedloop.sh/feedbacks
+```
+
+## Base URLs
+
+- **Production**: `https://mcp.closedloop.sh`
+- **Test**: `https://mcp-test.closedloop.sh`
+
+## Rate Limits
+
+- **Free Plan**: 100 requests/hour
+- **Pro Plan**: 1,000 requests/hour  
+- **Enterprise**: 10,000 requests/hour
+
+## Quick Start
+
+### Get Recent Feedback
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://mcp.closedloop.sh/feedbacks?limit=10&status=open"
+```
+
+### Submit New Feedback
+```bash
+curl -X POST -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"content":"Users want dark mode toggle","title":"Dark Mode Request"}' \
+     "https://mcp.closedloop.sh/ingest"
+```
+
+### Check Integration Status
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://mcp.closedloop.sh/integrations"
 ```

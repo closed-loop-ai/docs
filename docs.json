@@ -31,21 +31,21 @@
         ]
       },
       {
-        "tab": "MCP Server",
+        "tab": "API",
         "groups": [
           {
-            "group": "Setup & Configuration",
+            "group": "Getting Started",
             "pages": [
-              "mcp-server/installation",
-              "mcp-server/configuration"
+              "api-reference/introduction"
             ]
           },
           {
-            "group": "API Reference",
+            "group": "Endpoints",
             "pages": [
-              "mcp-server/api/authentication",
-              "mcp-server/api/endpoints",
-              "mcp-server/api/webhooks"
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/delete",
+              "api-reference/endpoint/webhook"
             ]
           }
         ]
@@ -142,5 +142,15 @@
       "github": "https://github.com/closed-loop-ai",
       "linkedin": "https://linkedin.com/company/closedloop-ai"
     }
-  }
+  },
+  "api": {
+    "baseUrl": "https://mcp.closedloop.sh",
+    "playground": {
+      "mode": "simple"
+    },
+    "auth": {
+      "method": "bearer"
+    }
+  },
+  "openapi": "api-reference/openapi.yaml"
 }
