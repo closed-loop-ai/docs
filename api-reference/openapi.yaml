@@ -56,16 +56,14 @@ info:
     - **👥 Team Management**: Manage team settings and website configurations
     - **📈 Usage Tracking**: Monitor API usage and credit consumption
     - **🔗 Integration Management**: Manage connected platforms and services
-    - **💚 Health Monitoring**: Real-time system health and status checks
-    - **💬 Chat Integration**: Frontend chat functionality for AI interactions
     
     ## 🔐 Authentication
     
-    All API endpoints (except health) require authentication via API key in the `Authorization` header.
+    All API endpoints require authentication via API key in the `Authorization` header.
     
     ```bash
     # Get your API key from the ClosedLoop AI dashboard
-    curl -H "Authorization: Bearer YOUR_API_KEY" https://mcp.closedloop.sh/feedbacks
+    curl -H "Authorization: Bearer YOUR_API_KEY" https://mcp.closedloop.sh/ingest
     ```
     
     ## 🌐 Base URLs
@@ -78,18 +76,18 @@ info:
     
     ## 🚀 Quick Start Examples
     
-    ### Get Recent Feedback
-    ```bash
-    curl -H "Authorization: Bearer YOUR_API_KEY" \
-         "https://mcp.closedloop.sh/feedbacks?limit=10&status=open"
-    ```
-    
-    ### Create New Feedback
+    ### Submit Customer Feedback
     ```bash
     curl -X POST -H "Authorization: Bearer YOUR_API_KEY" \
          -H "Content-Type: application/json" \
-         -d '{"title":"Users want dark mode","content":"Multiple users mentioned wanting dark mode","priority":"medium"}' \
-         "https://mcp.closedloop.sh/feedbacks"
+         -d '{"content":"Users want dark mode","title":"Dark Mode Request","customer_id":"customer-123"}' \
+         "https://mcp.closedloop.sh/ingest"
+    ```
+    
+    ### Get AI-Processed Insights
+    ```bash
+    curl -H "Authorization: Bearer YOUR_API_KEY" \
+         "https://mcp.closedloop.sh/feedbacks?limit=10&status=open"
     ```
     
     ### Check Integration Status
@@ -118,166 +116,6 @@ security:
   - ApiKeyAuth: []
 
 paths:
-  /health:
-    get:
-      tags:
-        - Health
-      summary: Health Check
-      description: Check if the MCP server is running and healthy
-      operationId: healthCheck
-      security: []
-      responses:
-        '200':
-          description: Server is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  timestamp:
-                    type: string
-                    format: date-time
-                    example: "2025-01-27T10:30:00Z"
-                  uptime:
-                    type: number
-                    example: 86400
-                  environment:
-                    type: string
-                    example: "production"
-                  hostname:
-                    type: string
-                    example: "mcp-server-01"
-        '500':
-          description: Server is unhealthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /feedbacks:
-    get:
-      tags:
-        - Feedback
-      summary: List AI-Processed Feedback
-      description: |
-        **Get all AI-analyzed customer feedback** with powerful filtering options.
-        
-        This endpoint returns structured feedback data that has been processed by our AI,
-        including customer insights, sentiment analysis, and prioritized recommendations.
-        
-        **Perfect for:**
-        - Building feedback dashboards
-        - Creating product roadmaps
-        - Tracking customer sentiment trends
-        - Generating reports for stakeholders
-        
-        **What you get:**
-        - AI-analyzed insights with severity levels
-        - Pain points and feature requests
-        - Competitive gaps and willingness to pay
-        - Use cases and feature areas
-      operationId: listFeedbacks
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 1000
-            default: 1
-          description: Page number for pagination
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Number of feedback items to return
-        - name: date_from
-          in: query
-          schema:
-            type: string
-            format: date
-          description: Start date for feedback (YYYY-MM-DD)
-        - name: date_to
-          in: query
-          schema:
-            type: string
-            format: date
-          description: End date for feedback (YYYY-MM-DD)
-        - name: severity
-          in: query
-          schema:
-            type: string
-            enum: [critical, high, medium, low, all]
-            default: all
-          description: Filter by feedback severity level
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [open, closed, all]
-            default: all
-          description: Filter by feedback status
-        - name: source_id
-          in: query
-          schema:
-            type: string
-            format: uuid
-          description: Filter by source ID
-        - name: tag
-          in: query
-          schema:
-            type: string
-            maxLength: 100
-            pattern: '^[a-zA-Z0-9_-]+$'
-          description: Filter by tag (alphanumeric with underscores and hyphens)
-        - name: sort_by
-          in: query
-          schema:
-            type: string
-            enum: [timestamp, severity, status]
-            default: timestamp
-          description: Sort by field
-        - name: sort_order
-          in: query
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
-          description: Sort order
-      responses:
-        '200':
-          description: List of AI-processed feedback items
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-                    properties:
-                      feedbacks:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/ProcessedFeedback'
-                      pagination:
-                        $ref: '#/components/schemas/Pagination'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-
   /ingest:
     post:
       tags:
@@ -437,6 +275,126 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /feedbacks:
+    get:
+      tags:
+        - Feedback
+      summary: List AI-Processed Feedback
+      description: |
+        **Get all AI-analyzed customer feedback** with powerful filtering options.
+        
+        This endpoint returns structured feedback data that has been processed by our AI,
+        including customer insights, sentiment analysis, and prioritized recommendations.
+        
+        **Perfect for:**
+        - Building feedback dashboards
+        - Creating product roadmaps
+        - Tracking customer sentiment trends
+        - Generating reports for stakeholders
+        
+        **What you get:**
+        - AI-analyzed insights with severity levels
+        - Pain points and feature requests
+        - Competitive gaps and willingness to pay
+        - Use cases and feature areas
+      operationId: listFeedbacks
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of feedback items to return
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for feedback (YYYY-MM-DD)
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for feedback (YYYY-MM-DD)
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low, all]
+            default: all
+          description: Filter by feedback severity level
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed, all]
+            default: all
+          description: Filter by feedback status
+        - name: source_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by source ID
+        - name: tag
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+            pattern: '^[a-zA-Z0-9_-]+$'
+          description: Filter by tag (alphanumeric with underscores and hyphens)
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [timestamp, severity, status]
+            default: timestamp
+          description: Sort by field
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order
+      responses:
+        '200':
+          description: List of AI-processed feedback items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      feedbacks:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProcessedFeedback'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /feedbacks/{id}:
     get:
       tags:
@@ -469,7 +427,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
 
   /team/website:
     get:
@@ -704,299 +661,6 @@ paths:
                     $ref: '#/components/schemas/Integration'
         '404':
           $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /chat/conversations:
-    get:
-      tags:
-        - Frontend Integration - Chat
-      summary: List User Conversations
-      description: |
-        **Get user conversations for chat interface** (Frontend Integration).
-        
-        This endpoint is designed for frontend MCP client integration and returns
-        user conversations with titles and timestamps for display in chat interfaces.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: listConversations
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 3
-          description: Number of conversations to return (max 3 for sidebar)
-      responses:
-        '200':
-          description: List of user conversations
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Conversation'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-    post:
-      tags:
-        - Frontend Integration - Chat
-      summary: Create New Conversation
-      description: |
-        **Create a new chat conversation** (Frontend Integration).
-        
-        This endpoint creates a new conversation for the authenticated user.
-        Used by frontend MCP clients for chat functionality.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: createConversation
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - title
-              properties:
-                title:
-                  type: string
-                  example: "Product feedback discussion"
-                  description: Conversation title
-      responses:
-        '201':
-          description: Conversation created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/Conversation'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /chat/conversations/{id}/messages:
-    get:
-      tags:
-        - Frontend Integration - Chat
-      summary: Get Conversation Messages
-      description: |
-        **Get messages from a conversation** (Frontend Integration).
-        
-        This endpoint retrieves messages from a specific conversation for display
-        in chat interfaces. Used by frontend MCP clients.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: getConversationMessages
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Conversation ID
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 50
-          description: Number of messages to return
-      responses:
-        '200':
-          description: List of conversation messages
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Message'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    post:
-      tags:
-        - Frontend Integration - Chat
-      summary: Send Message
-      description: |
-        **Send a message in a conversation** (Frontend Integration).
-        
-        This endpoint sends a new message to a specific conversation.
-        Used by frontend MCP clients for chat functionality.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: sendMessage
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Conversation ID
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - content
-              properties:
-                content:
-                  type: string
-                  example: "What are the main pain points customers mentioned?"
-                  description: Message content
-      responses:
-        '201':
-          description: Message sent successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /chat/conversations/{id}/process:
-    post:
-      tags:
-        - Frontend Integration - Chat
-      summary: Process Message with AI
-      description: |
-        **Process a message with AI** (Frontend Integration).
-        
-        This endpoint processes a user message with AI and returns the response.
-        Used by frontend MCP clients for AI-powered chat functionality.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: processMessage
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Conversation ID
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - content
-              properties:
-                content:
-                  type: string
-                  example: "Analyze the feedback from our last customer call"
-                  description: Message content to process
-      responses:
-        '201':
-          description: Message processed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /chat/conversations/{id}/generate-title:
-    post:
-      tags:
-        - Frontend Integration - Chat
-      summary: Generate Conversation Title
-      description: |
-        **Generate a title for a conversation** (Frontend Integration).
-        
-        This endpoint generates an appropriate title for a conversation based on
-        the first message. Used by frontend MCP clients.
-        
-        **Note:** This is a frontend integration endpoint for internal chat functionality.
-      operationId: generateConversationTitle
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Conversation ID
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - firstMessage
-              properties:
-                firstMessage:
-                  type: string
-                  example: "What are the main pain points customers mentioned in our recent calls?"
-                  description: First message content to base title on
-      responses:
-        '200':
-          description: Title generated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-                    properties:
-                      title:
-                        type: string
-                        example: "Customer Pain Points Analysis"
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -1371,62 +1035,6 @@ components:
           example: "2025-01-27T10:30:00Z"
           description: When the usage occurred
 
-    Conversation:
-      type: object
-      required:
-        - id
-        - title
-        - created_at
-        - updated_at
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "conv_123456789"
-          description: Unique conversation identifier
-        title:
-          type: string
-          example: "Product feedback discussion"
-          description: Conversation title
-        created_at:
-          type: string
-          format: date-time
-          example: "2025-01-27T10:30:00Z"
-          description: When the conversation was created
-        updated_at:
-          type: string
-          format: date-time
-          example: "2025-01-27T10:30:00Z"
-          description: When the conversation was last updated
-
-    Message:
-      type: object
-      required:
-        - id
-        - content
-        - role
-        - created_at
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "msg_123456789"
-          description: Unique message identifier
-        content:
-          type: string
-          example: "What are the main pain points customers mentioned?"
-          description: Message content
-        role:
-          type: string
-          enum: [user, assistant]
-          example: "user"
-          description: Message role (user or AI assistant)
-        created_at:
-          type: string
-          format: date-time
-          example: "2025-01-27T10:30:00Z"
-          description: When the message was created
-
     SubmitFeedbackRequest:
       type: object
       required:
@@ -1608,17 +1216,13 @@ components:
             code: "INTERNAL_ERROR"
 
 tags:
-  - name: Health
-    description: Health check endpoints
-  - name: Feedback
-    description: Feedback management operations
   - name: Ingest
     description: Submit and track raw customer feedback for AI processing
+  - name: Feedback
+    description: Feedback management operations
   - name: Team
     description: Team management operations
   - name: Usage
     description: Usage tracking and monitoring
   - name: Integrations
     description: Integration management
-  - name: Frontend Integration - Chat
-    description: Frontend chat functionality for MCP client integration
