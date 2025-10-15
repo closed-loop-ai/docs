@@ -1,68 +1,92 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "ClosedLoop AI Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#10B981",
+    "light": "#34D399",
+    "dark": "#059669"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Getting Started",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Introduction",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "essentials/ai-agents",
+              "essentials/integrations",
+              "essentials/workflows"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "MCP Server",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Setup & Configuration",
             "pages": [
-              "api-reference/introduction"
+              "mcp-server/installation",
+              "mcp-server/configuration"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "API Reference",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "mcp-server/api/authentication",
+              "mcp-server/api/endpoints",
+              "mcp-server/api/webhooks"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI",
+        "groups": [
+          {
+            "group": "Installation & Setup",
+            "pages": [
+              "cli/installation",
+              "cli/authentication"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/commands/feedback",
+              "cli/commands/integrations",
+              "cli/commands/analytics"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integrations",
+        "groups": [
+          {
+            "group": "Data Sources",
+            "pages": [
+              "integrations/gong",
+              "integrations/typeform",
+              "integrations/support-tools"
+            ]
+          },
+          {
+            "group": "Output Destinations",
+            "pages": [
+              "integrations/linear",
+              "integrations/jira",
+              "integrations/slack"
             ]
           }
         ]
@@ -71,14 +95,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Website",
+          "href": "https://closedloop.sh",
+          "icon": "globe"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/closed-loop-ai",
+          "icon": "github"
         }
       ]
     }
@@ -91,13 +115,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@closedloop.sh"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "https://app.closedloop.sh/auth?mode=signup"
     }
   },
   "contextual": {
@@ -114,9 +138,9 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/closedloop_ai",
+      "github": "https://github.com/closed-loop-ai",
+      "linkedin": "https://linkedin.com/company/closedloop-ai"
     }
   }
 }
