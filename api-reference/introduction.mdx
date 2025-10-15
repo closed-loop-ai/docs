@@ -55,46 +55,6 @@ curl -H "Authorization: Bearer YOUR_API_KEY" https://mcp.closedloop.sh/feedbacks
 
 - **Production**: `https://mcp.closedloop.sh`
 
-## Security
-
-### 🔐 **API Key Security**
-- Store your API key securely and never expose it in client-side code
-- Use environment variables or secure key management systems
-- Rotate your API keys regularly for enhanced security
-- API keys are tied to your team and inherit your team's permissions
-
-### 🛡️ **Data Protection**
-- All API communications use HTTPS encryption
-- Customer data is processed securely and never stored longer than necessary
-- Webhook endpoints support HMAC signature verification
-- Data is isolated per team with strict access controls
-
-### ⚠️ **Security Best Practices**
-- Never log or print API keys in your application logs
-- Use different API keys for different environments (test vs production)
-- Monitor your API usage for unusual patterns
-- Report any security concerns to security@closedloop.sh
-
-## Rate Limits
-
-### 📊 **Plan Limits**
-- **Free Plan**: 100 requests/hour
-- **Pro Plan**: 1,000 requests/hour  
-- **Enterprise**: 10,000 requests/hour
-
-### 🚦 **Rate Limit Headers**
-All API responses include rate limit information in headers:
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1640995200
-```
-
-### ⏱️ **Rate Limit Behavior**
-- Rate limits are applied per API key
-- Exceeding limits returns HTTP 429 (Too Many Requests)
-- Limits reset at the top of each hour
-- Consider implementing exponential backoff for retries
 
 ## Quick Start
 
