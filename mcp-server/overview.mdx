@@ -1,0 +1,223 @@
+---
+title: 'MCP Server Overview'
+description: 'Model Context Protocol server for AI client integration with ClosedLoop AI'
+---
+
+## 🤖 What is the MCP Server?
+
+The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that provides AI clients with secure access to customer feedback data. It enables AI agents and tools to interact with ClosedLoop AI's customer insights through a standardized protocol.
+
+## 🎯 Key Features
+
+### **MCP Protocol Support**
+- Full Model Context Protocol implementation
+- Compatible with Claude, Cursor, and other MCP clients
+- Standardized tool interface for AI agents
+
+### **Secure Data Access**
+- Team-based API key authentication
+- Data isolation per team
+- 5-minute API key caching for performance
+
+### **Customer Feedback Tools**
+- `list_feedbacks` - Retrieve feedback with filtering and pagination
+- `get_feedback_detail` - Get detailed analysis of specific feedback
+- Rich metadata and AI analysis results
+
+## 🏗️ Architecture
+
+### **Core Components**
+- **MCP Protocol Handler** - Manages MCP client connections
+- **Authentication Service** - Validates API keys and manages team access
+- **Feedback Service** - Retrieves and processes customer feedback data
+- **Audit Service** - Logs all data access for security monitoring
+
+### **Data Flow**
+1. AI client connects via MCP protocol
+2. API key authentication validates team access
+3. Tools provide filtered access to team's feedback data
+4. All interactions are logged for audit purposes
+
+## 🔧 Technical Specifications
+
+### **Server Details**
+- **URL**: `https://mcp.closedloop.sh`
+- **Protocol**: Model Context Protocol (MCP)
+- **Authentication**: Bearer token (API key)
+- **Data Format**: JSON responses
+
+### **Dependencies**
+- Node.js 18+
+- PostgreSQL database
+- MCP SDK (@modelcontextprotocol/sdk)
+- Express.js for HTTP endpoints
+
+## 🚀 Quick Start
+
+### 1. Get Your API Key
+```bash
+# API keys are managed through the ClosedLoop web interface
+# Visit: https://app.closedloop.sh/api-keys
+```
+
+### 2. Connect Your AI Client
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### 3. Use the Tools
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "limit": 10,
+    "date_from": "2024-01-01"
+  }
+}
+```
+
+## 🔐 Security & Privacy
+
+### **Team Isolation**
+- All data access is scoped to your team
+- API keys provide access only to your team's data
+- No cross-team data access possible
+
+### **API Key Management**
+- 64-character random strings
+- Unique across all teams
+- Managed through ClosedLoop web interface
+- 5-minute caching for performance
+
+### **Audit Logging**
+- All tool usage is logged
+- API key access is monitored
+- Security events are tracked
+
+## 📊 Available Tools
+
+### **list_feedbacks**
+Retrieve customer feedback with optional filtering and pagination.
+
+**Parameters:**
+- `date_from` (optional): Start date (YYYY-MM-DD)
+- `date_to` (optional): End date (YYYY-MM-DD)
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 20, max: 100)
+
+### **get_feedback_detail**
+Get detailed information about a specific feedback item.
+
+**Parameters:**
+- `feedback_id` (required): UUID of the feedback item
+
+## 🎯 Use Cases
+
+### **AI-Powered Analysis**
+- Claude can analyze customer feedback patterns
+- Cursor can provide insights during development
+- Custom AI agents can process feedback data
+
+### **Development Integration**
+- Access feedback data in your development environment
+- Get customer insights while coding
+- Integrate feedback into your workflow
+
+### **Automated Reporting**
+- Generate feedback summaries
+- Track sentiment trends
+- Monitor customer satisfaction
+
+## 🔗 Integration Examples
+
+### **Claude Desktop**
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### **Cursor IDE**
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx", 
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+## 📈 Rate Limits
+
+- **Requests per minute**: 60
+- **Requests per hour**: 1,000
+- **Maximum page size**: 100 items
+
+## 🛠️ Development
+
+### **Local Setup**
+```bash
+# Clone the repository
+git clone https://github.com/closed-loop-ai/mcp-server
+
+# Install dependencies
+npm install
+
+# Set environment variables
+cp env.example .env
+
+# Start development server
+npm run dev
+```
+
+### **Testing**
+```bash
+# Run tests
+npm test
+
+# Test MCP connection
+npm run test:mcp
+```
+
+## 📞 Support
+
+### **Documentation**
+- **[Tool Reference](/mcp-server/tools)** - Complete tool documentation
+- **[Integration Guide](/mcp-server/integration)** - Setup and configuration
+- **[API Reference](/api-reference)** - REST API documentation
+
+### **Contact**
+- **Technical Support**: support@closedloop.sh
+- **Security Issues**: security@closedloop.sh
+- **Health Check**: https://mcp.closedloop.sh/health
+
+<Card
+  title="Get Started with MCP Tools"
+  icon="tools"
+  href="/mcp-server/tools"
+>
+  Learn about the available MCP tools and how to use them
+</Card>

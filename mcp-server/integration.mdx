@@ -1,0 +1,361 @@
+---
+title: 'Integration Guide'
+description: 'Setup and configuration guide for integrating ClosedLoop MCP Server with AI clients'
+---
+
+## 🚀 Getting Started
+
+This guide will help you integrate the ClosedLoop MCP Server with your AI client (Claude, Cursor, or custom MCP client).
+
+## 📋 Prerequisites
+
+### **Required**
+- Valid ClosedLoop AI account
+- API key from your team
+- MCP-compatible AI client
+
+### **API Key Setup**
+1. Visit [ClosedLoop AI Dashboard](https://app.closedloop.sh/api-keys)
+2. Generate a new API key for your team
+3. Copy the 64-character API key
+4. Store it securely (environment variable recommended)
+
+## 🔧 Client Configuration
+
+### **Claude Desktop**
+
+#### 1. Open Claude Desktop Settings
+- Click the gear icon in Claude Desktop
+- Select "Settings"
+
+#### 2. Add MCP Server Configuration
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+#### 3. Restart Claude Desktop
+- Close and reopen Claude Desktop
+- The MCP server will be available in your conversations
+
+### **Cursor IDE**
+
+#### 1. Open Cursor Settings
+- Go to Settings → Extensions → MCP
+- Or edit your MCP configuration file
+
+#### 2. Add MCP Server Configuration
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+#### 3. Restart Cursor
+- Reload the window or restart Cursor
+- MCP tools will be available in your AI interactions
+
+### **Custom MCP Client**
+
+#### 1. Install MCP Server Package
+```bash
+npm install @closedloop-ai/mcp-server
+```
+
+#### 2. Configure Environment
+```bash
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+```
+
+#### 3. Connect to Server
+```javascript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+const transport = new StdioClientTransport({
+  command: 'npx',
+  args: ['@closedloop-ai/mcp-server']
+});
+
+const client = new Client({
+  name: 'my-client',
+  version: '1.0.0'
+}, {
+  capabilities: {}
+});
+
+await client.connect(transport);
+```
+
+## 🔐 Security Configuration
+
+### **Environment Variables**
+```bash
+# Secure API key storage
+export CLOSEDLOOP_API_KEY="your-secure-api-key"
+
+# Optional: Custom server URL (default: https://mcp.closedloop.sh)
+export MCP_SERVER_URL="https://mcp.closedloop.sh"
+```
+
+### **API Key Security**
+- Never commit API keys to version control
+- Use environment variables or secure key management
+- Rotate API keys regularly
+- Monitor API key usage
+
+### **Network Security**
+- Use HTTPS for all connections
+- Consider VPN for sensitive environments
+- Monitor network traffic
+
+## 🧪 Testing Your Integration
+
+### **1. Verify Connection**
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "limit": 1
+  }
+}
+```
+
+**Expected Response:**
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"success\": true, \"data\": {\"feedbacks\": [...], \"pagination\": {...}}}"
+    }
+  ]
+}
+```
+
+### **2. Test Date Filtering**
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "date_from": "2024-01-01",
+    "date_to": "2024-01-31",
+    "limit": 5
+  }
+}
+```
+
+### **3. Test Detail Retrieval**
+```json
+{
+  "name": "get_feedback_detail",
+  "arguments": {
+    "feedback_id": "your-feedback-id-here"
+  }
+}
+```
+
+## 🔧 Troubleshooting
+
+### **Common Issues**
+
+#### Connection Failed
+**Error**: `Failed to connect to MCP server`
+
+**Solutions**:
+- Verify API key is correct
+- Check internet connection
+- Ensure MCP server package is installed
+- Try restarting your AI client
+
+#### Invalid API Key
+**Error**: `Invalid API key`
+
+**Solutions**:
+- Verify API key is copied correctly
+- Check if API key is active in ClosedLoop dashboard
+- Ensure API key has proper permissions
+- Try generating a new API key
+
+#### No Data Returned
+**Error**: Empty results or no feedback found
+
+**Solutions**:
+- Check if your team has feedback data
+- Verify date ranges are correct
+- Ensure you're using the right team's API key
+- Check if feedback exists in the specified date range
+
+#### Rate Limit Exceeded
+**Error**: `Rate limit exceeded`
+
+**Solutions**:
+- Wait before making more requests
+- Reduce request frequency
+- Use pagination for large datasets
+- Consider caching results
+
+### **Debug Mode**
+
+#### Enable Verbose Logging
+```bash
+export DEBUG=mcp-server:*
+npx @closedloop-ai/mcp-server
+```
+
+#### Check Server Health
+```bash
+curl https://mcp.closedloop.sh/health
+```
+
+**Expected Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0"
+}
+```
+
+## 📊 Usage Examples
+
+### **Basic Feedback Analysis**
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "limit": 10,
+    "date_from": "2024-01-01"
+  }
+}
+```
+
+### **Sentiment Analysis**
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "limit": 50,
+    "date_from": "2024-01-01",
+    "date_to": "2024-01-31"
+  }
+}
+```
+
+### **Detailed Investigation**
+```json
+{
+  "name": "get_feedback_detail",
+  "arguments": {
+    "feedback_id": "123e4567-e89b-12d3-a456-426614174000"
+  }
+}
+```
+
+## 🎯 Best Practices
+
+### **Efficient Data Usage**
+- Use date ranges to limit results
+- Start with small page sizes for testing
+- Cache results when appropriate
+- Use `get_feedback_detail` only when needed
+
+### **Error Handling**
+- Always check for error responses
+- Handle rate limiting gracefully
+- Implement retry logic for transient failures
+- Log errors for debugging
+
+### **Security**
+- Store API keys securely
+- Monitor API key usage
+- Rotate keys regularly
+- Use least-privilege access
+
+### **Performance**
+- Use pagination for large datasets
+- Consider date ranges for historical data
+- Implement caching where appropriate
+- Monitor rate limits
+
+## 🔗 Advanced Configuration
+
+### **Custom Server URL**
+```json
+{
+  "mcpServers": {
+    "closedloop": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "your-api-key",
+        "MCP_SERVER_URL": "https://custom-mcp-server.com"
+      }
+    }
+  }
+}
+```
+
+### **Multiple Teams**
+```json
+{
+  "mcpServers": {
+    "closedloop-team1": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "team1-api-key"
+      }
+    },
+    "closedloop-team2": {
+      "command": "npx",
+      "args": ["@closedloop-ai/mcp-server"],
+      "env": {
+        "CLOSEDLOOP_API_KEY": "team2-api-key"
+      }
+    }
+  }
+}
+```
+
+## 📞 Support
+
+### **Documentation**
+- **[MCP Tools Reference](/mcp-server/tools)** - Complete tool documentation
+- **[MCP Server Overview](/mcp-server/overview)** - Architecture and features
+- **[API Reference](/api-reference)** - REST API documentation
+
+### **Contact**
+- **Technical Support**: support@closedloop.sh
+- **Security Issues**: security@closedloop.sh
+- **Health Check**: https://mcp.closedloop.sh/health
+
+### **Community**
+- **GitHub Issues**: Report bugs and request features
+- **Discord**: Join our community for discussions
+- **Documentation**: Check our comprehensive guides
+
+<Card
+  title="Ready to Use MCP Tools?"
+  icon="tools"
+  href="/mcp-server/tools"
+>
+  Learn about the available MCP tools and how to use them effectively
+</Card>

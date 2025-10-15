@@ -1,0 +1,360 @@
+---
+title: 'MCP Tools Reference'
+description: 'Complete reference for all available MCP tools in ClosedLoop AI'
+---
+
+## 🔧 Available Tools
+
+The ClosedLoop MCP Server provides two core tools for accessing customer feedback data:
+
+1. **[list_feedbacks](#list_feedbacks)** - Retrieve feedback with filtering and pagination
+2. **[get_feedback_detail](#get_feedback_detail)** - Get detailed information about specific feedback
+
+## 📋 list_feedbacks
+
+Retrieve customer feedback with optional filtering and pagination.
+
+### **Description**
+Get a paginated list of customer feedback items for the authenticated team. Supports date range filtering and pagination to help you find the feedback you need.
+
+### **Input Schema**
+```json
+{
+  "type": "object",
+  "properties": {
+    "date_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date for feedback (YYYY-MM-DD)"
+    },
+    "date_to": {
+      "type": "string", 
+      "format": "date",
+      "description": "End date for feedback (YYYY-MM-DD)"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Page number for pagination"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20,
+      "description": "Number of feedback items per page"
+    }
+  },
+  "required": []
+}
+```
+
+### **Parameters**
+
+<ParamField path="date_from" type="string" format="date">
+  Start date for feedback filtering. Format: YYYY-MM-DD (e.g., "2024-01-01")
+</ParamField>
+
+<ParamField path="date_to" type="string" format="date">
+  End date for feedback filtering. Format: YYYY-MM-DD (e.g., "2024-01-31")
+</ParamField>
+
+<ParamField path="page" type="integer" default="1">
+  Page number for pagination. Minimum: 1
+</ParamField>
+
+<ParamField path="limit" type="integer" default="20">
+  Number of feedback items per page. Range: 1-100
+</ParamField>
+
+### **Example Usage**
+
+#### Get Recent Feedback
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "limit": 10
+  }
+}
+```
+
+#### Get Feedback from Date Range
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "date_from": "2024-01-01",
+    "date_to": "2024-01-31",
+    "page": 1,
+    "limit": 20
+  }
+}
+```
+
+#### Get All Feedback (Paginated)
+```json
+{
+  "name": "list_feedbacks",
+  "arguments": {
+    "page": 2,
+    "limit": 50
+  }
+}
+```
+
+### **Response Format**
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"success\": true, \"data\": {\"feedbacks\": [...], \"pagination\": {...}}}"
+    }
+  ]
+}
+```
+
+### **Response Data Structure**
+```json
+{
+  "success": true,
+  "data": {
+    "feedbacks": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "content": "The new dashboard is confusing and hard to navigate",
+        "sentiment": "negative",
+        "topic": "bug_report",
+        "priority": "high",
+        "source": "gong",
+        "created_at": "2024-01-15T10:30:00Z",
+        "updated_at": "2024-01-15T10:30:00Z",
+        "metadata": {
+          "customer_id": "customer_123",
+          "call_duration": 1200,
+          "speaker": "customer",
+          "call_id": "call_456"
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "pages": 8
+    }
+  }
+}
+```
+
+### **Feedback Object Fields**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (UUID) |
+| `content` | string | The actual feedback text |
+| `sentiment` | string | AI-determined sentiment (positive/negative/neutral) |
+| `topic` | string | Categorized topic (feature_request/bug_report/complaint/praise) |
+| `priority` | string | Priority level (low/medium/high/critical) |
+| `source` | string | Data source (gong/zendesk/intercom/slack) |
+| `created_at` | string | ISO 8601 timestamp |
+| `updated_at` | string | ISO 8601 timestamp |
+| `metadata` | object | Additional context data |
+
+### **Metadata Fields**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `customer_id` | string | Customer identifier |
+| `call_duration` | number | Call duration in seconds (Gong) |
+| `speaker` | string | Who spoke (customer/agent) |
+| `call_id` | string | Call identifier (Gong) |
+
+---
+
+## 🔍 get_feedback_detail
+
+Get detailed information about a specific feedback item.
+
+### **Description**
+Retrieve comprehensive details about a specific feedback item, including full analysis and metadata. This tool provides deeper insights than the list view.
+
+### **Input Schema**
+```json
+{
+  "type": "object",
+  "properties": {
+    "feedback_id": {
+      "type": "string",
+      "description": "UUID of the feedback item"
+    }
+  },
+  "required": ["feedback_id"]
+}
+```
+
+### **Parameters**
+
+<ParamField path="feedback_id" type="string" required>
+  UUID of the feedback item to retrieve details for
+</ParamField>
+
+### **Example Usage**
+
+#### Get Specific Feedback Details
+```json
+{
+  "name": "get_feedback_detail",
+  "arguments": {
+    "feedback_id": "123e4567-e89b-12d3-a456-426614174000"
+  }
+}
+```
+
+### **Response Format**
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"success\": true, \"data\": {...}}"
+    }
+  ]
+}
+```
+
+### **Response Data Structure**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "content": "The new dashboard is confusing and hard to navigate. We had to train our team for 2 hours just to understand the new layout.",
+    "sentiment": "negative",
+    "topic": "bug_report",
+    "priority": "high",
+    "source": "gong",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "metadata": {
+      "customer_id": "customer_123",
+      "call_duration": 1200,
+      "speaker": "customer",
+      "call_id": "call_456",
+      "participants": ["customer", "sales_rep", "product_manager"]
+    },
+    "analysis": {
+      "key_points": [
+        "Dashboard navigation is confusing",
+        "Requires extensive training",
+        "Layout changes are disruptive"
+      ],
+      "action_items": [
+        "Improve dashboard navigation",
+        "Add user onboarding flow",
+        "Consider gradual rollout"
+      ],
+      "sentiment_score": 0.2,
+      "confidence": 0.95,
+      "business_impact": "high",
+      "urgency": "medium"
+    }
+  }
+}
+```
+
+### **Analysis Fields**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key_points` | array | Extracted key points from the feedback |
+| `action_items` | array | Suggested action items based on the feedback |
+| `sentiment_score` | number | Numeric sentiment score (0-1, where 0 is negative) |
+| `confidence` | number | AI confidence level (0-1) |
+| `business_impact` | string | Business impact assessment (low/medium/high) |
+| `urgency` | string | Urgency level (low/medium/high) |
+
+## 🚨 Error Handling
+
+### **Common Error Responses**
+
+#### Invalid API Key
+```json
+{
+  "error": "Invalid API key"
+}
+```
+
+#### Missing Required Parameter
+```json
+{
+  "error": "Invalid arguments: \"feedback_id\" is required"
+}
+```
+
+#### Feedback Not Found
+```json
+{
+  "error": "Feedback not found or access denied"
+}
+```
+
+#### Rate Limiting
+```json
+{
+  "error": "Rate limit exceeded"
+}
+```
+
+#### Invalid Date Format
+```json
+{
+  "error": "Invalid date format. Use YYYY-MM-DD"
+}
+```
+
+## 📊 Rate Limits
+
+- **Requests per minute**: 60
+- **Requests per hour**: 1,000
+- **Maximum page size**: 100 items
+
+## 🔐 Security Considerations
+
+1. **Team Isolation**: All data access is scoped to the team that owns the API key
+2. **API Key Security**: Store API keys securely and rotate them regularly
+3. **Data Privacy**: Only access data you have permission to view
+4. **Audit Logging**: All tool usage is logged for security monitoring
+
+## 💡 Best Practices
+
+### **Efficient Data Retrieval**
+- Use date ranges to limit results when possible
+- Start with smaller page sizes for testing
+- Use `get_feedback_detail` only when you need the full analysis
+
+### **Error Handling**
+- Always check for error responses
+- Handle rate limiting gracefully
+- Validate feedback IDs before calling `get_feedback_detail`
+
+### **Performance Optimization**
+- Cache results when appropriate
+- Use pagination for large datasets
+- Consider date ranges for historical data
+
+## 🔗 Related Resources
+
+- **[MCP Server Overview](/mcp-server/overview)** - Learn about the MCP server architecture
+- **[Integration Guide](/mcp-server/integration)** - Setup and configuration instructions
+- **[API Reference](/api-reference)** - REST API documentation
+
+<Card
+  title="Need Help with Integration?"
+  icon="help"
+  href="/mcp-server/integration"
+>
+  Learn how to set up and configure the MCP server with your AI client
+</Card>
