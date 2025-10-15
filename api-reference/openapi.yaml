@@ -120,21 +120,30 @@ paths:
     post:
       tags:
         - Ingest
-      summary: Submit Customer Feedback for Processing
+      summary: Submit Raw Customer Data for Processing
       description: |
-        **Submit raw customer feedback** for AI processing and analysis.
+        **Submit raw customer data** for AI processing and analysis.
         
-        This endpoint accepts customer feedback from any source (calls, emails, surveys, etc.)
-        and queues it for AI analysis. The feedback will be processed and appear in `/feedbacks`
+        This endpoint accepts raw customer data from any source (calls, emails, surveys, support tickets, etc.)
+        and queues it for AI analysis. The data will be processed and insights will appear in `/feedbacks`
         once analysis is complete.
         
         **Common use cases:**
-        - Submitting feedback from customer support tickets
-        - Recording insights from user interviews
-        - Capturing feedback from email conversations
-        - Adding context to existing feedback
+        - Submitting raw call transcripts for analysis
+        - Uploading customer email conversations
+        - Recording survey responses and feedback
+        - Adding support ticket content for processing
+        - Submitting interview notes and recordings
         
-        **Data Flow:** Submit here → AI Processing → Available in `/feedbacks`
+        **What to submit:**
+        - Raw call transcripts and recordings
+        - Email conversations with customers
+        - Survey responses and feedback forms
+        - Support ticket content
+        - Interview notes and recordings
+        - Any unstructured customer communication
+        
+        **Data Flow:** Submit raw data here → AI Processing → Available as insights in `/feedbacks`
       operationId: submitFeedback
       requestBody:
         required: true
@@ -177,21 +186,27 @@ paths:
     get:
       tags:
         - Ingest
-      summary: List Submitted Feedback
+      summary: List Submitted Raw Data
       description: |
-        **Get all submitted feedback** that's being processed or awaiting AI analysis.
+        **Get all submitted raw data** that's being processed or awaiting AI analysis.
         
-        This is your "processing queue" of customer insights that have been submitted
-        but may not yet be fully analyzed. Perfect for tracking processing status
+        This is your "processing queue" of raw customer data (calls, emails, surveys, etc.)
+        that have been submitted for AI analysis. Perfect for tracking processing status
         and monitoring the AI analysis pipeline.
         
+        **What you'll see:**
+        - Raw data submissions (calls, emails, surveys, etc.)
+        - Processing status (processing, completed, failed)
+        - Submission timestamps and metadata
+        - Error messages if processing failed
+        
         **Why this matters:**
-        - Track what's being processed
+        - Track what raw data is being processed
         - Monitor processing status and errors
-        - Build automated workflows around processing
+        - Build automated workflows around data ingestion
         - Debug processing issues
         
-        **Data Flow:** Submitted here → Processing → Available in `/feedbacks`
+        **Data Flow:** Submit raw data here → AI Processing → Available as insights in `/feedbacks`
       operationId: listSubmittedFeedback
       parameters:
         - name: page
@@ -246,8 +261,8 @@ paths:
     get:
       tags:
         - Ingest
-      summary: Get Submitted Feedback Detail
-      description: Get detailed information about a specific submitted feedback item with full content
+      summary: Get Submitted Raw Data Detail
+      description: Get detailed information about a specific submitted raw data item with full content
       operationId: getSubmittedFeedbackDetail
       parameters:
         - name: id
