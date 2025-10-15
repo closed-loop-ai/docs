@@ -32,7 +32,7 @@ cl config --json
 ## 📋 Parameters
 
 <ParamField path="--api-key" type="string">
-  Your ClosedLoop AI API key. Get it from your dashboard at https://closedloop.sh.
+  Your ClosedLoop AI API key. Get it from your dashboard at http://app.closedloop.sh.
 </ParamField>
 
 <ParamField path="--json" type="flag">
@@ -178,7 +178,7 @@ if cl feedback --json > /dev/null 2>&1; then
   echo "✅ API key is valid and working"
 else
   echo "❌ API key is invalid or expired"
-  echo "Get a new key from: https://closedloop.sh"
+  echo "Get a new key from: http://app.closedloop.sh"
   exit 1
 fi
 ```
@@ -315,7 +315,7 @@ Config File: /Users/username/.closedloop/config.json
 🔑 No API key configured!
 
 To get started:
-1. Go to https://closedloop.sh
+1. Go to http://app.closedloop.sh
 2. Sign up for a free account
 3. Generate your API key
 4. Run: cl config set --api-key <your-key>
@@ -325,7 +325,7 @@ To get started:
 <Error>
 **Invalid API Key**
 ```
-❌ Invalid API key. Get your free API key at https://closedloop.sh
+❌ Invalid API key. Get your free API key at http://app.closedloop.sh
 ```
 </Error>
 
@@ -342,7 +342,7 @@ To get started:
 | Code | Description | Solution |
 |------|-------------|----------|
 | `NO_API_KEY` | No API key configured | Run `cl config set --api-key <key>` |
-| `INVALID_API_KEY` | API key is invalid | Get new key from https://closedloop.sh |
+| `INVALID_API_KEY` | API key is invalid | Get new key from http://app.closedloop.sh |
 | `CONFIG_ERROR` | Configuration file error | Check permissions or use environment variable |
 | `API_ERROR` | Server error | Check internet connection, try again |
 
