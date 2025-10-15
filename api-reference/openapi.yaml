@@ -87,7 +87,7 @@ info:
     ### Get AI-Processed Insights
     ```bash
     curl -H "Authorization: Bearer YOUR_API_KEY" \
-         "https://mcp.closedloop.sh/insights?limit=10&status=open"
+         "https://mcp.closedloop.sh/feedbacks?limit=10&status=open"
     ```
     
     ### Check Integration Status
@@ -275,7 +275,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /insights:
+  /feedbacks:
     get:
       tags:
         - Insights
@@ -382,7 +382,7 @@ paths:
                   data:
                     type: object
                     properties:
-                      insights:
+                      feedbacks:
                         type: array
                         items:
                           $ref: '#/components/schemas/ProcessedInsight'
@@ -395,7 +395,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /insights/{id}:
+  /feedbacks/{id}:
     get:
       tags:
         - Insights

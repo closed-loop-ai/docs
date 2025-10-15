@@ -1,11 +1,11 @@
 ---
-title: 'Insights'
+title: 'Feedback'
 description: 'View and analyze AI-generated customer insights'
 ---
 
 ## 📊 Overview
 
-The `cl insights` command displays AI-generated insights from your ingested customer data. These insights are automatically created by ClosedLoop AI's analysis engine, providing structured, actionable intelligence from raw customer input.
+The `cl feedback` command displays AI-generated insights from your ingested customer data. These insights are automatically created by ClosedLoop AI's analysis engine, providing structured, actionable intelligence from raw customer input.
 
 ## 🚀 Basic Usage
 
@@ -13,23 +13,23 @@ The `cl insights` command displays AI-generated insights from your ingested cust
 
 ```bash
 # Show all AI-generated insights
-cl insights
+cl feedback
 
 # With pagination
-cl insights --page 2 --limit 5
+cl feedback --page 2 --limit 5
 
 # JSON output for scripting
-cl insights --json
+cl feedback --json
 ```
 
 ### View Specific Insight
 
 ```bash
 # Show detailed insight information
-cl insights 2ea8f556-052b-4f5c-bf86-833780b3d00d
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d
 
 # JSON output
-cl insights 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
+cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
 ```
 
 ## 📋 Parameters
