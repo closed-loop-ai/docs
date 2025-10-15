@@ -449,13 +449,14 @@ paths:
         - Team
       summary: Get Team Website
       description: |
-        **Get your team's website URL** for context and branding.
+        **Get your product's website URL** for AI context and analysis.
         
-        This helps ClosedLoop AI understand your company better and can be used for:
-        - Customizing feedback context
-        - Branding in generated reports
-        - Integration with your existing tools
-        - Customer communication templates
+        This helps ClosedLoop AI understand your product better for more accurate feedback analysis:
+        - Learn about your product features from website content
+        - Understand your competitors and market positioning
+        - Analyze pricing and value propositions
+        - Provide product-specific insights instead of generic feedback
+        - Better categorize feedback by feature area
       operationId: getTeamWebsite
       responses:
         '200':
@@ -488,7 +489,10 @@ paths:
       tags:
         - Team
       summary: Update Team Website
-      description: Update the website URL for the authenticated team
+      description: |
+        **Update your product's website URL** for AI context and analysis.
+        
+        Setting your product website helps ClosedLoop AI provide more accurate and relevant feedback analysis by understanding your product's features, positioning, and market context.
       operationId: updateTeamWebsite
       requestBody:
         required: true
