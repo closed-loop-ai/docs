@@ -92,7 +92,7 @@ export MCP_SERVER_URL="https://mcp.closedloop.sh"
 ### **1. Verify Connection**
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "limit": 1
   }
@@ -114,7 +114,7 @@ export MCP_SERVER_URL="https://mcp.closedloop.sh"
 ### **2. Test Date Filtering**
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "date_from": "2024-01-01",
     "date_to": "2024-01-31",
@@ -164,7 +164,7 @@ curl https://mcp.closedloop.sh/health
 ### **Basic Insight Analysis**
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "limit": 10,
     "date_from": "2024-01-01"
@@ -175,7 +175,7 @@ curl https://mcp.closedloop.sh/health
 ### **Sentiment Analysis**
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "limit": 50,
     "date_from": "2024-01-01",
