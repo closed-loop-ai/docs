@@ -50,7 +50,7 @@ The `retry_after` field indicates how many seconds you should wait before making
 
 ```javascript
 // Check rate limit headers
-const response = await mcpClient.callTool('list_feedbacks', { limit: 10 });
+const response = await mcpClient.callTool('list_insights', { limit: 10 });
 const remaining = response.headers['x-ratelimit-remaining'];
 const resetTime = response.headers['x-ratelimit-reset'];
 
@@ -85,7 +85,7 @@ async function callWithBackoff(tool, args, maxRetries = 5) {
 ```javascript
 const cache = new Map();
 
-async function getCachedFeedbacks(dateFrom, dateTo) {
+async function getCachedInsights(dateFrom, dateTo) {
   const cacheKey = `${dateFrom}-${dateTo}`;
   
   if (cache.has(cacheKey)) {
@@ -95,7 +95,7 @@ async function getCachedFeedbacks(dateFrom, dateTo) {
     }
   }
   
-  const result = await mcpClient.callTool('list_feedbacks', {
+  const result = await mcpClient.callTool('list_insights', {
     date_from: dateFrom,
     date_to: dateTo
   });
@@ -113,20 +113,20 @@ async function getCachedFeedbacks(dateFrom, dateTo) {
 
 ```javascript
 // Good: Use appropriate page sizes
-async function getAllFeedbacks(dateFrom, dateTo) {
-  const allFeedbacks = [];
+async function getAllInsights(dateFrom, dateTo) {
+  const allInsights = [];
   let page = 1;
   const limit = 50; // Reasonable page size
   
   while (true) {
-    const result = await mcpClient.callTool('list_feedbacks', {
+    const result = await mcpClient.callTool('list_insights', {
       date_from: dateFrom,
       date_to: dateTo,
       page: page,
       limit: limit
     });
     
-    allFeedbacks.push(...result.data.feedbacks);
+    allInsights.push(...result.data.insights);
     
     if (page >= result.data.pagination.pages) {
       break;
@@ -138,7 +138,7 @@ async function getAllFeedbacks(dateFrom, dateTo) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   
-  return allFeedbacks;
+  return allInsights;
 }
 ```
 
@@ -146,10 +146,10 @@ async function getAllFeedbacks(dateFrom, dateTo) {
 
 ```javascript
 // Good: Batch multiple operations
-async function getMultipleFeedbackDetails(feedbackIds) {
+async function getMultipleInsightDetails(insightIds) {
   const results = await Promise.allSettled(
-    feedbackIds.map(id => 
-      mcpClient.callTool('get_feedback_detail', { feedback_id: id })
+    insightIds.map(id => 
+      mcpClient.callTool('get_insight_detail', { insight_id: id })
     )
   );
   

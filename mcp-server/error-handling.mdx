@@ -26,7 +26,7 @@ The ClosedLoop MCP Server provides comprehensive error handling to help you diag
 ### Missing Required Parameter
 ```json
 {
-  "error": "Invalid arguments: \"feedback_id\" is required"
+  "error": "Invalid arguments: \"insight_id\" is required"
 }
 ```
 
@@ -37,19 +37,19 @@ The ClosedLoop MCP Server provides comprehensive error handling to help you diag
 - Verify parameter names are spelled correctly
 - Refer to the tool documentation for required parameters
 
-### Feedback Not Found
+### Insight Not Found
 ```json
 {
-  "error": "Feedback not found or access denied"
+  "error": "Insight not found or access denied"
 }
 ```
 
-**Cause**: The requested feedback item doesn't exist or you don't have access to it.
+**Cause**: The requested insight item doesn't exist or you don't have access to it.
 
 **Solution**:
-- Verify the feedback ID is correct
-- Check if the feedback belongs to your team
-- Ensure the feedback hasn't been deleted
+- Verify the insight ID is correct
+- Check if the insight belongs to your team
+- Ensure the insight hasn't been deleted
 
 ### Rate Limiting
 ```json
@@ -92,21 +92,21 @@ The ClosedLoop MCP Server provides comprehensive error handling to help you diag
 - Check if the MCP server is running
 
 #### Empty Results
-**Error**: Empty results or no feedback found
+**Error**: Empty results or no insights found
 
-**Cause**: No feedback matches your criteria.
+**Cause**: No insights match your criteria.
 
 **Solution**:
 - Expand your date range
 - Check your filtering parameters
-- Verify you have feedback data in the system
+- Verify you have insight data in the system
 
 ## Error Handling Best Practices
 
 ### Always Check for Error Responses
 ```javascript
 // Good: Check for errors
-const result = await mcpClient.callTool('list_feedbacks', { limit: 10 });
+const result = await mcpClient.callTool('list_insights', { limit: 10 });
 if (result.error) {
   console.error('Error:', result.error);
   return;
@@ -137,10 +137,10 @@ async function callWithRetry(tool, args, maxRetries = 3) {
 ### Validate Input Parameters
 ```javascript
 // Good: Validate before making requests
-function validateFeedbackId(feedbackId) {
+function validateInsightId(insightId) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(feedbackId)) {
-    throw new Error('Invalid feedback ID format');
+  if (!uuidRegex.test(insightId)) {
+    throw new Error('Invalid insight ID format');
   }
 }
 ```
@@ -149,12 +149,12 @@ function validateFeedbackId(feedbackId) {
 ```javascript
 // Good: Comprehensive error logging
 try {
-  const result = await mcpClient.callTool('get_feedback_detail', { feedback_id });
+  const result = await mcpClient.callTool('get_insight_detail', { insight_id });
   return result;
 } catch (error) {
   console.error('MCP Error:', {
-    tool: 'get_feedback_detail',
-    args: { feedback_id },
+    tool: 'get_insight_detail',
+    args: { insight_id },
     error: error.message,
     timestamp: new Date().toISOString()
   });
@@ -178,7 +178,7 @@ try {
 
 3. **Data Access Issues**
    - Confirm you have access to the requested data
-   - Check if feedback exists in your team's data
+   - Check if insights exist in your team's data
    - Verify date ranges are reasonable
 
 4. **Performance Issues**

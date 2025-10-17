@@ -57,7 +57,7 @@ curl -X POST https://mcp.closedloop.sh/ \
     "id": 1,
     "method": "tools/call",
     "params": {
-      "name": "list_feedbacks",
+      "name": "list_insights",
       "arguments": {
         "limit": 10
       }
@@ -105,7 +105,7 @@ export MCP_SERVER_URL="https://mcp.closedloop.sh"
   "content": [
     {
       "type": "text",
-      "text": "{\"success\": true, \"data\": {\"feedbacks\": [...], \"pagination\": {...}}}"
+      "text": "{\"success\": true, \"data\": {\"insights\": [...], \"pagination\": {...}}}"
     }
   ]
 }
@@ -126,9 +126,9 @@ export MCP_SERVER_URL="https://mcp.closedloop.sh"
 ### **3. Test Detail Retrieval**
 ```json
 {
-  "name": "get_feedback_detail",
+  "name": "get_insight_detail",
   "arguments": {
-    "feedback_id": "your-feedback-id-here"
+    "insight_id": "your-insight-id-here"
   }
 }
 ```
@@ -161,7 +161,7 @@ curl https://mcp.closedloop.sh/health
 
 ## 📊 Usage Examples
 
-### **Basic Feedback Analysis**
+### **Basic Insight Analysis**
 ```json
 {
   "name": "list_feedbacks",
@@ -187,9 +187,9 @@ curl https://mcp.closedloop.sh/health
 ### **Detailed Investigation**
 ```json
 {
-  "name": "get_feedback_detail",
+  "name": "get_insight_detail",
   "arguments": {
-    "feedback_id": "123e4567-e89b-12d3-a456-426614174000"
+    "insight_id": "123e4567-e89b-12d3-a456-426614174000"
   }
 }
 ```
@@ -200,7 +200,7 @@ curl https://mcp.closedloop.sh/health
 - Use date ranges to limit results
 - Start with small page sizes for testing
 - Cache results when appropriate
-- Use `get_feedback_detail` only when needed
+- Use `get_insight_detail` only when needed
 
 ### **Security**
 - Store API keys securely

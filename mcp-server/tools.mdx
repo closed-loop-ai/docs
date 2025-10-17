@@ -5,17 +5,17 @@ description: 'Complete reference for all available MCP tools in ClosedLoop AI'
 
 ## 🔧 Available Tools
 
-The ClosedLoop MCP Server provides two core tools for accessing customer feedback data:
+The ClosedLoop MCP Server provides two core tools for accessing customer insight data:
 
-1. **[list_feedbacks](#list_feedbacks)** - Retrieve feedback with filtering and pagination
-2. **[get_feedback_detail](#get_feedback_detail)** - Get detailed information about specific feedback
+1. **[list_insights](#list_insights)** - Retrieve insights with filtering and pagination
+2. **[get_insight_detail](#get_insight_detail)** - Get detailed information about specific insights
 
-## 📋 list_feedbacks
+## 📋 list_insights
 
-Retrieve customer feedback with optional filtering and pagination.
+Retrieve customer insights with optional filtering and pagination.
 
 ### **Description**
-Get a paginated list of customer feedback items for the authenticated team. Supports date range filtering and pagination to help you find the feedback you need.
+Get a paginated list of customer insight items for the authenticated team. Supports date range filtering and pagination to help you find the insights you need.
 
 ### **Input Schema**
 ```json
@@ -25,12 +25,12 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
     "date_from": {
       "type": "string",
       "format": "date",
-      "description": "Start date for feedback (YYYY-MM-DD)"
+      "description": "Start date for insights (YYYY-MM-DD)"
     },
     "date_to": {
       "type": "string", 
       "format": "date",
-      "description": "End date for feedback (YYYY-MM-DD)"
+      "description": "End date for insights (YYYY-MM-DD)"
     },
     "page": {
       "type": "integer",
@@ -43,7 +43,7 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
       "minimum": 1,
       "maximum": 100,
       "default": 20,
-      "description": "Number of feedback items per page"
+      "description": "Number of insight items per page"
     }
   },
   "required": []
@@ -53,11 +53,11 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 ### **Parameters**
 
 <ParamField path="date_from" type="string" format="date">
-  Start date for feedback filtering. Format: YYYY-MM-DD (e.g., "2024-01-01")
+  Start date for insight filtering. Format: YYYY-MM-DD (e.g., "2024-01-01")
 </ParamField>
 
 <ParamField path="date_to" type="string" format="date">
-  End date for feedback filtering. Format: YYYY-MM-DD (e.g., "2024-01-31")
+  End date for insight filtering. Format: YYYY-MM-DD (e.g., "2024-01-31")
 </ParamField>
 
 <ParamField path="page" type="integer" default="1">
@@ -65,25 +65,25 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 </ParamField>
 
 <ParamField path="limit" type="integer" default="20">
-  Number of feedback items per page. Range: 1-100
+  Number of insight items per page. Range: 1-100
 </ParamField>
 
 ### **Example Usage**
 
-#### Get Recent Feedback
+#### Get Recent Insights
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "limit": 10
   }
 }
 ```
 
-#### Get Feedback from Date Range
+#### Get Insights from Date Range
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "date_from": "2024-01-01",
     "date_to": "2024-01-31",
@@ -93,10 +93,10 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 }
 ```
 
-#### Get All Feedback (Paginated)
+#### Get All Insights (Paginated)
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "page": 2,
     "limit": 50
@@ -110,7 +110,7 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
   "content": [
     {
       "type": "text",
-      "text": "{\"success\": true, \"data\": {\"feedbacks\": [...], \"pagination\": {...}}}"
+      "text": "{\"success\": true, \"data\": {\"insights\": [...], \"pagination\": {...}}}"
     }
   ]
 }
@@ -121,7 +121,7 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 {
   "success": true,
   "data": {
-    "feedbacks": [
+    "insights": [
       {
         "id": "123e4567-e89b-12d3-a456-426614174000",
         "content": "The new dashboard is confusing and hard to navigate",
@@ -149,12 +149,12 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 }
 ```
 
-### **Feedback Object Fields**
+### **Insight Object Fields**
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique identifier (UUID) |
-| `content` | string | The actual feedback text |
+| `content` | string | The actual insight text |
 | `sentiment` | string | AI-determined sentiment (positive/negative/neutral) |
 | `topic` | string | Categorized topic (feature_request/bug_report/complaint/praise) |
 | `priority` | string | Priority level (low/medium/high/critical) |
@@ -174,41 +174,41 @@ Get a paginated list of customer feedback items for the authenticated team. Supp
 
 ---
 
-## 🔍 get_feedback_detail
+## 🔍 get_insight_detail
 
-Get detailed information about a specific feedback item.
+Get detailed information about a specific insight item.
 
 ### **Description**
-Retrieve comprehensive details about a specific feedback item, including full analysis and metadata. This tool provides deeper insights than the list view.
+Retrieve comprehensive details about a specific insight item, including full analysis and metadata. This tool provides deeper insights than the list view.
 
 ### **Input Schema**
 ```json
 {
   "type": "object",
   "properties": {
-    "feedback_id": {
+    "insight_id": {
       "type": "string",
-      "description": "UUID of the feedback item"
+      "description": "UUID of the insight item"
     }
   },
-  "required": ["feedback_id"]
+  "required": ["insight_id"]
 }
 ```
 
 ### **Parameters**
 
-<ParamField path="feedback_id" type="string" required>
-  UUID of the feedback item to retrieve details for
+<ParamField path="insight_id" type="string" required>
+  UUID of the insight item to retrieve details for
 </ParamField>
 
 ### **Example Usage**
 
-#### Get Specific Feedback Details
+#### Get Specific Insight Details
 ```json
 {
-  "name": "get_feedback_detail",
+  "name": "get_insight_detail",
   "arguments": {
-    "feedback_id": "123e4567-e89b-12d3-a456-426614174000"
+    "insight_id": "123e4567-e89b-12d3-a456-426614174000"
   }
 }
 ```
@@ -269,8 +269,8 @@ Retrieve comprehensive details about a specific feedback item, including full an
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `key_points` | array | Extracted key points from the feedback |
-| `action_items` | array | Suggested action items based on the feedback |
+| `key_points` | array | Extracted key points from the insight |
+| `action_items` | array | Suggested action items based on the insight |
 | `sentiment_score` | number | Numeric sentiment score (0-1, where 0 is negative) |
 | `confidence` | number | AI confidence level (0-1) |
 | `business_impact` | string | Business impact assessment (low/medium/high) |
@@ -282,7 +282,7 @@ Retrieve comprehensive details about a specific feedback item, including full an
 ### **Efficient Data Retrieval**
 - Use date ranges to limit results when possible
 - Start with smaller page sizes for testing
-- Use `get_feedback_detail` only when you need the full analysis
+- Use `get_insight_detail` only when you need the full analysis
 
 
 ### **Performance Optimization**

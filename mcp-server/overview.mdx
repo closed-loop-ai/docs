@@ -5,7 +5,7 @@ description: 'Model Context Protocol server for AI client integration with Close
 
 ## 🤖 What is the MCP Server?
 
-The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that provides AI clients with secure access to customer feedback data. It enables AI agents and tools to interact with ClosedLoop AI's customer insights through a standardized protocol.
+The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that provides AI clients with secure access to customer insight data. It enables AI agents and tools to interact with ClosedLoop AI's customer insights through a standardized protocol.
 
 ## 🎯 Key Features
 
@@ -14,9 +14,9 @@ The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that prov
 - Compatible with Claude, Cursor, and other MCP clients
 - Standardized tool interface for AI agents
 
-### **Customer Feedback Tools**
-- `list_feedbacks` - Retrieve feedback with filtering and pagination
-- `get_feedback_detail` - Get detailed analysis of specific feedback
+### **Customer Insight Tools**
+- `list_insights` - Retrieve insights with filtering and pagination
+- `get_insight_detail` - Get detailed analysis of specific insights
 - Rich metadata and AI analysis results
 
 ## 🔧 Technical Specifications
@@ -59,7 +59,7 @@ The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that prov
 ### 3. Use the Tools
 ```json
 {
-  "name": "list_feedbacks",
+  "name": "list_insights",
   "arguments": {
     "limit": 10,
     "date_from": "2024-01-01"
@@ -69,8 +69,8 @@ The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that prov
 
 ## 📊 Available Tools
 
-### **list_feedbacks**
-Retrieve customer feedback with optional filtering and pagination.
+### **list_insights**
+Retrieve customer insights with optional filtering and pagination.
 
 **Parameters:**
 - `date_from` (optional): Start date (YYYY-MM-DD)
@@ -78,26 +78,26 @@ Retrieve customer feedback with optional filtering and pagination.
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 20, max: 100)
 
-### **get_feedback_detail**
-Get detailed information about a specific feedback item.
+### **get_insight_detail**
+Get detailed information about a specific insight item.
 
 **Parameters:**
-- `feedback_id` (required): UUID of the feedback item
+- `insight_id` (required): UUID of the insight item
 
 ## 🎯 Use Cases
 
 ### **AI-Powered Analysis**
-- Claude can analyze customer feedback patterns
+- Claude can analyze customer insight patterns
 - Cursor can provide insights during development
-- Custom AI agents can process feedback data
+- Custom AI agents can process insight data
 
 ### **Development Integration**
-- Access feedback data in your development environment
+- Access insight data in your development environment
 - Get customer insights while coding
-- Integrate feedback into your workflow
+- Integrate insights into your workflow
 
 ### **Automated Reporting**
-- Generate feedback summaries
+- Generate insight summaries
 - Track sentiment trends
 - Monitor customer satisfaction
 
