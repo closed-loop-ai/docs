@@ -10,7 +10,7 @@ The ClosedLoop AI CLI provides powerful commands for managing customer feedback 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `cl ingest` | Submit feedback for AI analysis | `cl ingest "Dashboard is confusing"` |
-| `cl feedback` | View AI-generated insights | `cl feedback` |
+| `cl insight` | View AI-generated insights | `cl insight` |
 | `cl team` | Manage team settings | `cl team website "https://example.com"` |
 | `cl config` | Configure API key | `cl config set --api-key <key>` |
 
@@ -109,23 +109,23 @@ View structured insights created by AI analysis:
 
 ```bash
 # Show all insights
-cl feedback
+cl insight
 
 # With pagination
-cl feedback --page 2 --limit 5
+cl insight --page 2 --limit 5
 
 # JSON output for scripting
-cl feedback --json
+cl insight --json
 ```
 
 ### View Specific Insight
 
 ```bash
 # Show detailed insight information
-cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d
+cl insight 2ea8f556-052b-4f5c-bf86-833780b3d00d
 
 # JSON output
-cl feedback 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
+cl insight 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
 ```
 
 ### Feedback Parameters
@@ -221,7 +221,7 @@ cl --help
 
 # Command-specific help
 cl help ingest
-cl help feedback
+cl help insight
 cl help team
 ```
 
@@ -328,10 +328,10 @@ cl ingest "Feature request"
 
 ```bash
 # Good
-cl feedback --json | jq '.data[0].title'
+cl insight --json | jq '.data[0].title'
 
 # Bad
-cl feedback | grep "Title"
+cl insight | grep "Title"
 ```
 
 ### 4. Handle Errors Gracefully
