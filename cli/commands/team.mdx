@@ -165,26 +165,6 @@ cl team website "ftp://yourproduct.com"          # ❌ Invalid protocol
 cl team website "not-a-url"                      # ❌ Invalid format
 ```
 
-### Configuration Management
-
-```bash
-#!/bin/bash
-# update-website.sh
-
-NEW_WEBSITE="$1"
-
-if [ -z "$NEW_WEBSITE" ]; then
-  echo "Usage: $0 <website-url>"
-  exit 1
-fi
-
-# Update website
-cl team website "$NEW_WEBSITE"
-
-# Verify update
-CURRENT_WEBSITE=$(cl team website --json | jq -r '.data.website')
-echo "Website updated to: $CURRENT_WEBSITE"
-```
 
 
 
