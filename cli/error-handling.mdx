@@ -222,36 +222,6 @@ export CLOSEDLOOP_API_KEY="your-api-key-here"
 - Verify the file exists
 - Use absolute paths if needed
 
-## 🔧 Processing Errors
-
-### Processing Failed
-
-<Error>
-**Error Message:**
-```
-❌ Processing Error: Unable to process feedback
-```
-</Error>
-
-**Solution:**
-- Check that your content is clear and meaningful
-- Try rephrasing your input
-- Ensure the content is in a supported language
-- Contact support if the issue persists
-
-### Processing Timeout
-
-<Error>
-**Error Message:**
-```
-⏳ Processing is taking longer than expected
-```
-</Error>
-
-**Solution:**
-- Wait a bit longer for processing to complete
-- Check the status manually: `cl ingest <id> --status`
-- Contact support if processing takes more than 30 minutes
 
 ## 📊 Error Codes Reference
 
@@ -263,7 +233,6 @@ export CLOSEDLOOP_API_KEY="your-api-key-here"
 | `NOT_FOUND` | Resource not found | Check ID is correct and exists |
 | `RATE_LIMITED` | Too many requests | Wait and retry |
 | `CONNECTION_ERROR` | Cannot connect to servers | Check internet connection |
-| `PROCESSING_ERROR` | Unable to process content | Try rephrasing or contact support |
 | `CONFIG_ERROR` | Configuration file error | Check permissions or use environment variable |
 
 ## 🛠️ Troubleshooting Steps
