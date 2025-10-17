@@ -50,9 +50,6 @@ cl insight 2ea8f556-052b-4f5c-bf86-833780b3d00d --json
   Output results in JSON format for scripting and automation.
 </ParamField>
 
-<ParamField path="--search" type="string">
-  Search insights by content, title, or other fields.
-</ParamField>
 
 ## 💡 Examples
 
@@ -97,15 +94,6 @@ Source URL: https://support.company.com/ticket/456
 Created: 2024-01-15, 8:30:00 PM
 ```
 
-### Search Insights
-
-```bash
-# Search for performance-related insights
-cl insight --search "performance"
-
-# Search for high-severity issues
-cl insight --json | jq '.data[] | select(.severity == "high")'
-```
 
 ## 📊 Output Formats
 
