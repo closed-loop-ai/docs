@@ -81,27 +81,20 @@ cl insight 2ea8f556-052b-4f5c-bf86-833780b3d00d
 
 **Output:**
 ```
-📊 Insight Details
-────────────────────────────────────────────────────────
+🎯 Insight Details:
+──────────────────────────────────────────────────
 ID: 2ea8f556-052b-4f5c-bf86-833780b3d00d
 Title: Mobile App Performance Issues
-Severity: high
-Status: open
-Created: 2024-01-15T10:30:00Z
-
-🎯 AI Analysis:
-• Pain Point: Users experience frequent crashes when uploading files
-• Impact: High - affects core functionality and user retention
-• Workaround: Users currently use web version for file uploads
-• Competitive Gap: Competitors have more stable mobile apps
-• Willingness to Pay: High - users mentioned paying extra for stability
-
-📈 Business Impact:
-• Revenue Risk: Medium-High
-• Customer Satisfaction: Low
-• Feature Priority: Critical
-
-🔗 Source: https://support.company.com/ticket/456
+Clarity: Detailed
+Deal Blocker: No
+Pain Point: Users experience frequent crashes when uploading files, affecting core functionality and user retention
+Workaround: Users currently use web version for file uploads
+Competitor Gap: Competitors have more stable mobile apps
+Willingness to Pay: High - users mentioned paying extra for stability
+Use Case: File upload functionality on mobile devices
+Feature Area: Mobile App
+Source URL: https://support.company.com/ticket/456
+Created: 2024-01-15, 8:30:00 PM
 ```
 
 ### Search Insights
@@ -136,19 +129,16 @@ cl insight --json | jq '.data[] | select(.severity == "high")'
     {
       "id": "2ea8f556-052b-4f5c-bf86-833780b3d00d",
       "title": "Mobile App Performance Issues",
-      "timestamp": "2024-01-15T10:30:00Z",
-      "severity": "high",
-      "status": "open",
-      "clarity": 0.85,
+      "clarity": "Detailed",
       "is_deal_blocker": false,
-      "pain_point": "Users experience frequent crashes when uploading files",
+      "pain_point": "Users experience frequent crashes when uploading files, affecting core functionality and user retention",
       "workaround": "Users currently use web version for file uploads",
       "competitor_gap": "Competitors have more stable mobile apps",
       "willingness_to_pay": "High - users mentioned paying extra for stability",
-      "use_case": "File upload functionality",
+      "use_case": "File upload functionality on mobile devices",
       "feature_area": "Mobile App",
       "source_url": "https://support.company.com/ticket/456",
-      "created_at": "2024-01-15T10:30:00Z"
+      "created_at": "2024-01-15, 8:30:00 PM"
     }
   ],
   "pagination": {
@@ -162,24 +152,24 @@ cl insight --json | jq '.data[] | select(.severity == "high")'
 
 ## 🔍 Advanced Usage
 
-### Filter by Severity
+### Filter by Clarity
 
 ```bash
-# Get only high-severity insights
-cl insight --json | jq '.data[] | select(.severity == "high")'
+# Get only detailed insights
+cl insight --json | jq '.data[] | select(.clarity == "Detailed")'
 
-# Get critical issues
-cl insight --json | jq '.data[] | select(.severity == "critical")'
+# Get high-clarity insights
+cl insight --json | jq '.data[] | select(.clarity | contains("Detailed"))'
 ```
 
-### Filter by Status
+### Filter by Deal Blockers
 
 ```bash
-# Get only open insights
-cl insight --json | jq '.data[] | select(.status == "open")'
+# Get only deal blocker insights
+cl insight --json | jq '.data[] | select(.is_deal_blocker == true)'
 
-# Get closed insights
-cl insight --json | jq '.data[] | select(.status == "closed")'
+# Get non-deal blocker insights
+cl insight --json | jq '.data[] | select(.is_deal_blocker == false)'
 ```
 
 ### Business Impact Analysis
