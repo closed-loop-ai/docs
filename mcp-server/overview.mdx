@@ -14,29 +14,10 @@ The **ClosedLoop MCP Server** is a Model Context Protocol (MCP) server that prov
 - Compatible with Claude, Cursor, and other MCP clients
 - Standardized tool interface for AI agents
 
-### **Secure Data Access**
-- Team-based API key authentication
-- Data isolation per team
-- 5-minute API key caching for performance
-
 ### **Customer Feedback Tools**
 - `list_feedbacks` - Retrieve feedback with filtering and pagination
 - `get_feedback_detail` - Get detailed analysis of specific feedback
 - Rich metadata and AI analysis results
-
-## 🏗️ Architecture
-
-### **Core Components**
-- **MCP Protocol Handler** - Manages MCP client connections
-- **Authentication Service** - Validates API keys and manages team access
-- **Feedback Service** - Retrieves and processes customer feedback data
-- **Audit Service** - Logs all data access for security monitoring
-
-### **Data Flow**
-1. AI client connects via MCP protocol
-2. API key authentication validates team access
-3. Tools provide filtered access to team's feedback data
-4. All interactions are logged for audit purposes
 
 ## 🔧 Technical Specifications
 
