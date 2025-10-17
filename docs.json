@@ -83,7 +83,8 @@
                 ]
               },
               "cli/examples",
-              "cli/best-practices"
+              "cli/best-practices",
+              "cli/error-handling"
             ]
           },
           {

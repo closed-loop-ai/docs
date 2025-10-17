@@ -1,0 +1,353 @@
+---
+title: 'Error Handling'
+description: 'Common errors, troubleshooting, and solutions for ClosedLoop AI CLI'
+---
+
+## 🚨 Overview
+
+This page covers common errors you might encounter when using ClosedLoop AI CLI, along with solutions and troubleshooting steps.
+
+## 🔑 Authentication Errors
+
+### No API Key Configured
+
+<Error>
+**Error Message:**
+```
+🔑 No API key configured!
+
+To get started:
+1. Go to https://app.closedloop.sh
+2. Sign up for a free account
+3. Generate your API key
+4. Run: cl config set --api-key <your-key>
+```
+</Error>
+
+**Solution:**
+```bash
+# Set your API key
+cl config set --api-key your-api-key-here
+
+# Verify configuration
+cl config
+```
+
+### Invalid API Key
+
+<Error>
+**Error Message:**
+```
+❌ Invalid API key. Get your free API key at https://app.closedloop.sh
+```
+</Error>
+
+**Solution:**
+1. Get a new API key from [https://app.closedloop.sh](https://app.closedloop.sh)
+2. Update your configuration:
+   ```bash
+   cl config set --api-key your-new-key-here
+   ```
+
+### API Key Expired
+
+<Error>
+**Error Message:**
+```
+❌ API key is invalid or expired
+```
+</Error>
+
+**Solution:**
+- Generate a new API key from your dashboard
+- Update the configuration with the new key
+
+## 📝 Validation Errors
+
+### Invalid Website URL
+
+<Error>
+**Error Message:**
+```
+❌ Validation Error: Invalid website URL format. Must include protocol (http:// or https://) and domain
+```
+</Error>
+
+**Solution:**
+```bash
+# Good - includes protocol
+cl team website "https://yourproduct.com"
+
+# Bad - missing protocol
+cl team website "yourproduct.com"
+```
+
+### Invalid Page Number
+
+<Error>
+**Error Message:**
+```
+❌ Validation Error: Invalid page number
+```
+</Error>
+
+**Solution:**
+- Use page numbers starting from 1
+- Check that the page exists (not beyond available pages)
+
+### Content Too Short
+
+<Error>
+**Error Message:**
+```
+❌ Validation Error: Content must be at least 10 characters
+```
+</Error>
+
+**Solution:**
+- Provide more detailed feedback content
+- Minimum 10 characters required
+
+## 🔍 Not Found Errors
+
+### Insight Not Found
+
+<Error>
+**Error Message:**
+```
+❌ Error: Insight not found
+```
+</Error>
+
+**Solution:**
+- Check the insight ID is correct
+- Verify the insight exists in your account
+- Use `cl insight` to list available insights
+
+### Ingest Not Found
+
+<Error>
+**Error Message:**
+```
+❌ Error: Ingest not found
+```
+</Error>
+
+**Solution:**
+- Check the ingest ID is correct
+- Verify the ingest exists in your account
+- Use `cl ingest` to list available ingests
+
+## 🌐 Connection Errors
+
+### Cannot Connect to Servers
+
+<Error>
+**Error Message:**
+```
+❌ Connection Error: Cannot connect to ClosedLoop AI servers
+```
+</Error>
+
+**Solution:**
+1. Check your internet connection
+2. Verify you can access https://mcp.closedloop.sh
+3. Check if your firewall is blocking the connection
+4. Try again in a few minutes
+
+### Timeout Errors
+
+<Error>
+**Error Message:**
+```
+❌ Error: Request timeout
+```
+</Error>
+
+**Solution:**
+- Check your internet connection speed
+- Try again with a smaller dataset
+- Contact support if the issue persists
+
+## ⚡ Rate Limiting
+
+### Too Many Requests
+
+<Error>
+**Error Message:**
+```
+❌ Rate Limited: Too many requests
+```
+</Error>
+
+**Solution:**
+- Wait a few minutes before trying again
+- Reduce the frequency of your requests
+- Consider using pagination for large datasets
+
+## 🗂️ File System Errors
+
+### Configuration File Error
+
+<Error>
+**Error Message:**
+```
+❌ Error: Cannot write to configuration file
+```
+</Error>
+
+**Solution:**
+```bash
+# Check file permissions
+ls -la ~/.closedloop/config.json
+
+# Fix permissions if needed
+chmod 600 ~/.closedloop/config.json
+
+# Or use environment variable instead
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+```
+
+### File Not Found
+
+<Error>
+**Error Message:**
+```
+❌ Error: File not found: feedback.txt
+```
+</Error>
+
+**Solution:**
+- Check the file path is correct
+- Verify the file exists
+- Use absolute paths if needed
+
+## 🔧 Processing Errors
+
+### Processing Failed
+
+<Error>
+**Error Message:**
+```
+❌ Processing Error: Unable to process feedback
+```
+</Error>
+
+**Solution:**
+- Check that your content is clear and meaningful
+- Try rephrasing your input
+- Ensure the content is in a supported language
+- Contact support if the issue persists
+
+### Processing Timeout
+
+<Error>
+**Error Message:**
+```
+⏳ Processing is taking longer than expected
+```
+</Error>
+
+**Solution:**
+- Wait a bit longer for processing to complete
+- Check the status manually: `cl ingest <id> --status`
+- Contact support if processing takes more than 30 minutes
+
+## 📊 Error Codes Reference
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `NO_API_KEY` | No API key configured | Run `cl config set --api-key <key>` |
+| `INVALID_API_KEY` | API key is invalid | Get new key from https://app.closedloop.sh |
+| `VALIDATION_ERROR` | Invalid parameters | Check input format and requirements |
+| `NOT_FOUND` | Resource not found | Check ID is correct and exists |
+| `RATE_LIMITED` | Too many requests | Wait and retry |
+| `CONNECTION_ERROR` | Cannot connect to servers | Check internet connection |
+| `PROCESSING_ERROR` | Unable to process content | Try rephrasing or contact support |
+| `CONFIG_ERROR` | Configuration file error | Check permissions or use environment variable |
+
+## 🛠️ Troubleshooting Steps
+
+### 1. Check Configuration
+
+```bash
+# Verify your configuration
+cl config
+
+# Check if API key is set
+cl config --json | jq '.data.configured'
+```
+
+### 2. Test Connection
+
+```bash
+# Test basic connectivity
+ping mcp.closedloop.sh
+
+# Test API connectivity
+curl -I https://mcp.closedloop.sh
+```
+
+### 3. Validate Input
+
+```bash
+# Check your input format
+echo "Your feedback content" | wc -c  # Should be >= 10
+
+# Validate URLs
+echo "https://yourproduct.com" | grep -E '^https?://'
+```
+
+### 4. Check Logs
+
+```bash
+# Enable verbose output
+cl --verbose ingest "your feedback"
+
+# Check for detailed error messages
+cl config --json 2>&1 | jq '.'
+```
+
+## 🆘 Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the documentation** - Review the specific command pages
+2. **Search existing issues** - Check [GitHub Issues](https://github.com/closed-loop-ai/closedloop-cli/issues)
+3. **Contact support** - Email support@closedloop.sh with:
+   - Error message
+   - Command you were running
+   - Your CLI version (`cl --version`)
+   - Operating system details
+
+## 🔄 Common Solutions
+
+### Reset Configuration
+
+```bash
+# Remove configuration file
+rm ~/.closedloop/config.json
+
+# Reconfigure from scratch
+cl config set --api-key your-api-key-here
+```
+
+### Update CLI
+
+```bash
+# Update to latest version
+npm install -g @closedloop-ai/cli@latest
+
+# Verify version
+cl --version
+```
+
+### Use Environment Variables
+
+```bash
+# Set API key as environment variable
+export CLOSEDLOOP_API_KEY="your-api-key-here"
+
+# Verify it's working
+cl config
+```
