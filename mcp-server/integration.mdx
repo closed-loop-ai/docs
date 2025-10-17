@@ -135,43 +135,7 @@ export MCP_SERVER_URL="https://mcp.closedloop.sh"
 
 ## 🔧 Troubleshooting
 
-### **Common Issues**
-
-#### Connection Failed
-**Error**: `Failed to connect to MCP server`
-
-**Solutions**:
-- Verify API key is correct
-- Check internet connection
-- Ensure MCP server package is installed
-- Try restarting your AI client
-
-#### Invalid API Key
-**Error**: `Invalid API key`
-
-**Solutions**:
-- Verify API key is copied correctly
-- Check if API key is active in ClosedLoop dashboard
-- Ensure API key has proper permissions
-- Try generating a new API key
-
-#### No Data Returned
-**Error**: Empty results or no feedback found
-
-**Solutions**:
-- Check if your team has feedback data
-- Verify date ranges are correct
-- Ensure you're using the right team's API key
-- Check if feedback exists in the specified date range
-
-#### Rate Limit Exceeded
-**Error**: `Rate limit exceeded`
-
-**Solutions**:
-- Wait before making more requests
-- Reduce request frequency
-- Use pagination for large datasets
-- Consider caching results
+For comprehensive troubleshooting information, see the [Error Handling Guide](/mcp-server/error-handling).
 
 ### **Debug Mode**
 
@@ -238,9 +202,6 @@ curl https://mcp.closedloop.sh/health
 - Cache results when appropriate
 - Use `get_feedback_detail` only when needed
 
-### **Error Handling**
-For comprehensive error handling information, see the [Error Handling Guide](/mcp-server/error-handling).
-
 ### **Security**
 - Store API keys securely
 - Monitor API key usage
@@ -251,7 +212,6 @@ For comprehensive error handling information, see the [Error Handling Guide](/mc
 - Use pagination for large datasets
 - Consider date ranges for historical data
 - Implement caching where appropriate
-- For rate limit monitoring, see the [Rate Limits Guide](/mcp-server/rate-limits)
 
 ## 🔗 Multiple Teams
 
