@@ -23,10 +23,10 @@ cl ingest "The new dashboard is confusing and hard to navigate"
 cl ingest "Customer complaint about performance" --wait
 
 # 5. View AI-generated insights
-cl feedback
+cl insight
 
 # 6. Get detailed analysis of specific insight
-cl feedback <insight-id>
+cl insight <insight-id>
 ```
 
 ### Advanced Feedback Ingestion
@@ -46,7 +46,7 @@ cl ingest "Great product, love the new features!" \
 cl ingest --page 1 --limit 20
 
 # Get JSON output for scripting
-cl feedback --json | jq '.data[0].title'
+cl insight --json | jq '.data[0].title'
 ```
 
 ## 📊 Real-World Examples
@@ -72,7 +72,7 @@ cl ingest "After the recent update, the app is much faster. Great work!" \
   --email "sarah@company.com"
 
 # View all insights for this customer
-cl feedback --json | jq '.data[] | select(.customer_id == "customer-456")'
+cl insight --json | jq '.data[] | select(.customer_id == "customer-456")'
 ```
 
 ### Product Manager Workflow
@@ -95,7 +95,7 @@ cl ingest "Our competitor just launched dark mode and our customers are asking w
   --email "alex@company.com"
 
 # View all dark mode related insights
-cl feedback --json | jq '.data[] | select(.title | contains("dark mode"))'
+cl insight --json | jq '.data[] | select(.title | contains("dark mode"))'
 ```
 
 ### Business Analyst Workflow
@@ -118,7 +118,7 @@ cl ingest "The new pricing is confusing and we're not sure what we're paying for
   --email "david@company.com"
 
 # Analyze all pricing-related feedback
-cl feedback --json | jq '.data[] | select(.title | contains("pricing")) | {title, sentiment, business_impact}'
+cl insight --json | jq '.data[] | select(.title | contains("pricing")) | {title, sentiment, business_impact}'
 ```
 
 ## 🔗 Related Resources

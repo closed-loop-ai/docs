@@ -137,11 +137,11 @@ Use pagination when working with large datasets:
 
 ```bash
 # ✅ Good - use pagination
-cl feedback --page 1 --limit 20
+cl insight --page 1 --limit 20
 cl ingest --page 2 --limit 50
 
 # ❌ Bad - try to load everything at once
-cl feedback  # Might timeout with large datasets
+cl insight  # Might timeout with large datasets
 ```
 
 ## 🚀 Automation Best Practices
@@ -209,10 +209,10 @@ Focus on high-priority insights:
 
 ```bash
 # ✅ Good - focus on high priority
-cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")'
+cl insight --json | jq '.data[] | select(.severity == "high" or .severity == "critical")'
 
 # ❌ Bad - process all insights equally
-cl feedback --json | jq '.data[]'
+cl insight --json | jq '.data[]'
 ```
 
 ### 2. Track Business Impact
@@ -221,10 +221,10 @@ Monitor deal blockers and business impact:
 
 ```bash
 # ✅ Good - track business impact
-cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)'
+cl insight --json | jq '.data[] | select(.is_deal_blocker == true)'
 
 # ✅ Also good - track willingness to pay
-cl feedback --json | jq '.data[] | select(.willingness_to_pay | contains("High"))'
+cl insight --json | jq '.data[] | select(.willingness_to_pay | contains("High"))'
 ```
 
 ### 3. Regular Monitoring
@@ -341,7 +341,7 @@ CACHE_FILE="/tmp/insights-cache.json"
 CACHE_AGE=300  # 5 minutes
 
 if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(stat -c %Y "$CACHE_FILE"))) -gt $CACHE_AGE ]; then
-  cl feedback --json > "$CACHE_FILE"
+  cl insight --json > "$CACHE_FILE"
 fi
 
 # Use cached data
@@ -518,11 +518,11 @@ cl team website "https://yourproduct.com"
 
 # Basic workflow
 cl ingest "feedback content" --title "Descriptive Title" --customer "customer-123"
-cl feedback
+cl insight
 
 # Automation
 cl ingest "$CONTENT" --json | jq -r '.id'
-cl feedback --json | jq '.data[] | select(.severity == "high")'
+cl insight --json | jq '.data[] | select(.severity == "high")'
 ```
 
 ### Common Patterns
@@ -531,13 +531,13 @@ cl feedback --json | jq '.data[] | select(.severity == "high")'
 cl ingest "$CONTENT" --wait
 
 # Get specific insight
-cl feedback <insight-id>
+cl insight <insight-id>
 
 # Filter by customer
-cl feedback --json | jq '.data[] | select(.customer_id == "customer-123")'
+cl insight --json | jq '.data[] | select(.customer_id == "customer-123")'
 
 # Export to CSV
-cl feedback --json | jq -r '.data[] | [.id, .title, .severity] | @csv'
+cl insight --json | jq -r '.data[] | [.id, .title, .severity] | @csv'
 ```
 
 <Card

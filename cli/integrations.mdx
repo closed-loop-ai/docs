@@ -25,7 +25,7 @@ if [ -z "$SLACK_WEBHOOK_URL" ]; then
 fi
 
 # Get latest insights
-INSIGHTS=$(cl feedback --json | jq '.data[0:5]')
+INSIGHTS=$(cl insight --json | jq '.data[0:5]')
 
 # Format for Slack
 MESSAGE=$(echo "$INSIGHTS" | jq -r '
@@ -60,7 +60,7 @@ fi
 
 # Get high-severity insights from today
 TODAY=$(date +%Y-%m-%d)
-HIGH_SEVERITY=$(cl feedback --json | jq --arg today "$TODAY" '
+HIGH_SEVERITY=$(cl insight --json | jq --arg today "$TODAY" '
   .data[] | 
   select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical"))
 ')
@@ -99,7 +99,7 @@ fi
 TODAY=$(date +%Y-%m-%d)
 
 # Get today's summary
-SUMMARY=$(cl feedback --json | jq --arg today "$TODAY" '
+SUMMARY=$(cl insight --json | jq --arg today "$TODAY" '
   .data | 
   map(select(.created_at | startswith($today))) |
   {
@@ -143,7 +143,7 @@ if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ]; then
 fi
 
 # Get high-severity insights
-cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+cl insight --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
   TITLE=$(echo "$insight" | jq -r '.title')
   PAIN_POINT=$(echo "$insight" | jq -r '.pain_point')
   SEVERITY=$(echo "$insight" | jq -r '.severity')
@@ -186,7 +186,7 @@ if [ -z "$JIRA_URL" ] || [ -z "$JIRA_USER" ] || [ -z "$JIRA_TOKEN" ] || [ -z "$T
 fi
 
 # Get latest insights
-LATEST_INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+LATEST_INSIGHTS=$(cl insight --json | jq '.data[0:3]')
 
 # Format insights for Jira comment
 COMMENT=$(echo "$LATEST_INSIGHTS" | jq -r '
@@ -231,7 +231,7 @@ TODAY=$(date +%Y-%m-%d)
 # Generate email content
 SUBJECT="Daily Customer Insights Summary - $TODAY"
 
-BODY=$(cl feedback --json | jq --arg today "$TODAY" -r '
+BODY=$(cl insight --json | jq --arg today "$TODAY" -r '
   "Daily Customer Insights Summary\n" +
   "Date: " + $today + "\n\n" +
   (.data | 
@@ -273,7 +273,7 @@ if [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPO" ]; then
 fi
 
 # Get high-severity insights
-cl feedback --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
+cl insight --json | jq '.data[] | select(.severity == "high" or .severity == "critical")' | jq -s '.[]' | while read -r insight; do
   TITLE=$(echo "$insight" | jq -r '.title')
   PAIN_POINT=$(echo "$insight" | jq -r '.pain_point')
   SEVERITY=$(echo "$insight" | jq -r '.severity')
@@ -303,7 +303,7 @@ Export insights to Google Sheets using Google Apps Script:
 # google-sheets-export.sh
 
 # Get insights data
-INSIGHTS_JSON=$(cl feedback --json)
+INSIGHTS_JSON=$(cl insight --json)
 
 # Convert to CSV format
 echo "ID,Title,Severity,Status,Pain Point,Created,Updated" > insights.csv
@@ -339,7 +339,7 @@ if [ -z "$DISCORD_WEBHOOK_URL" ]; then
 fi
 
 # Get latest insights
-INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+INSIGHTS=$(cl insight --json | jq '.data[0:3]')
 
 # Format for Discord
 MESSAGE=$(echo "$INSIGHTS" | jq -r '
@@ -376,7 +376,7 @@ if [ -z "$TEAMS_WEBHOOK_URL" ]; then
 fi
 
 # Get latest insights
-INSIGHTS=$(cl feedback --json | jq '.data[0:3]')
+INSIGHTS=$(cl insight --json | jq '.data[0:3]')
 
 # Format for Teams
 MESSAGE=$(echo "$INSIGHTS" | jq -r '
@@ -432,7 +432,7 @@ jobs:
           
       - name: Analyze Feedback
         run: |
-          cl feedback --json > insights.json
+          cl insight --json > insights.json
           
       - name: Send to Slack
         if: success()
@@ -473,7 +473,7 @@ pipeline {
         
         stage('Analyze') {
             steps {
-                sh 'cl feedback --json > insights.json'
+                sh 'cl insight --json > insights.json'
             }
         }
         

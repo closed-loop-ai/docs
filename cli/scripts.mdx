@@ -41,7 +41,7 @@ if [ "$ID" != "null" ]; then
   
   # Show results
   echo "Analysis complete. View insights:"
-  cl feedback
+  cl insight
 else
   echo "Failed to ingest feedback"
   exit 1
@@ -152,7 +152,7 @@ echo "=== Daily Insights Report - $TODAY ==="
 echo
 
 # Get all insights from today
-cl feedback --json | jq --arg today "$TODAY" '
+cl insight --json | jq --arg today "$TODAY" '
   .data[] | 
   select(.created_at | startswith($today)) |
   {
@@ -165,7 +165,7 @@ cl feedback --json | jq --arg today "$TODAY" '
 
 echo
 echo "=== Summary ==="
-cl feedback --json | jq --arg today "$TODAY" '
+cl insight --json | jq --arg today "$TODAY" '
   .data | 
   map(select(.created_at | startswith($today))) |
   {
@@ -192,7 +192,7 @@ echo "=== Weekly Insights Summary - $START_DATE to $END_DATE ==="
 echo
 
 # Get insights from this week
-cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
+cl insight --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
   .data[] | 
   select(.created_at >= $start and .created_at <= $end) |
   {
@@ -206,7 +206,7 @@ cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
 
 echo
 echo "=== Weekly Statistics ==="
-cl feedback --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
+cl insight --json | jq --arg start "$START_DATE" --arg end "$END_DATE" '
   .data | 
   map(select(.created_at >= $start and .created_at <= $end)) |
   {
@@ -282,7 +282,7 @@ echo "=== Sentiment Analysis for Customer: $CUSTOMER_ID ==="
 echo
 
 # Get all insights for this customer
-cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+cl insight --json | jq --arg customer "$CUSTOMER_ID" '
   .data[] | 
   select(.customer_id == $customer) |
   {
@@ -295,7 +295,7 @@ cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
 
 echo
 echo "=== Sentiment Summary ==="
-cl feedback --json | jq --arg customer "$CUSTOMER_ID" '
+cl insight --json | jq --arg customer "$CUSTOMER_ID" '
   .data | 
   map(select(.customer_id == $customer)) |
   {
@@ -318,7 +318,7 @@ Alert on high-severity insights:
 
 # Get high-severity insights from today
 TODAY=$(date +%Y-%m-%d)
-HIGH_SEVERITY_COUNT=$(cl feedback --json | jq --arg today "$TODAY" '
+HIGH_SEVERITY_COUNT=$(cl insight --json | jq --arg today "$TODAY" '
   .data | 
   map(select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical"))) |
   length
@@ -329,7 +329,7 @@ if [ "$HIGH_SEVERITY_COUNT" -gt 0 ]; then
   echo
   
   # Show details
-  cl feedback --json | jq --arg today "$TODAY" '
+  cl insight --json | jq --arg today "$TODAY" '
     .data[] | 
     select(.created_at | startswith($today) and (.severity == "high" or .severity == "critical")) |
     {
@@ -353,7 +353,7 @@ Alert on insights that might block deals:
 # deal-blocker-alert.sh
 
 # Get deal blocker insights
-DEAL_BLOCKERS=$(cl feedback --json | jq '.data[] | select(.is_deal_blocker == true)')
+DEAL_BLOCKERS=$(cl insight --json | jq '.data[] | select(.is_deal_blocker == true)')
 
 if [ "$(echo "$DEAL_BLOCKERS" | jq -s 'length')" -gt 0 ]; then
   echo "🚨 DEAL BLOCKER ALERT: Critical insights that may impact deals!"
@@ -419,7 +419,7 @@ fi
 echo "✅ API key is configured"
 
 # Test API key by making a simple request
-if cl feedback --json > /dev/null 2>&1; then
+if cl insight --json > /dev/null 2>&1; then
   echo "✅ API key is valid and working"
 else
   echo "❌ API key is invalid or expired"
@@ -456,7 +456,7 @@ echo "=== Exporting insights to $OUTPUT_FILE ==="
 echo "ID,Title,Severity,Status,Pain Point,Created,Updated" > "$OUTPUT_FILE"
 
 # Export data
-cl feedback --json | jq -r '.data[] | [
+cl insight --json | jq -r '.data[] | [
   .id,
   .title,
   .severity,

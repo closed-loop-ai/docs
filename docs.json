@@ -77,7 +77,7 @@
                 "group": "  Command Reference",
                 "pages": [
                   "cli/commands/ingest",
-                  "cli/commands/feedback",
+                  "cli/commands/insight",
                   "cli/commands/team",
                   "cli/commands/config"
                 ]
