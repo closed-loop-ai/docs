@@ -38,7 +38,9 @@
             "pages": [
               "mcp-server/overview",
               "mcp-server/tools",
-              "mcp-server/integration"
+              "mcp-server/integration",
+              "mcp-server/error-handling",
+              "mcp-server/rate-limits"
             ]
           }
         ]

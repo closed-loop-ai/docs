@@ -1,0 +1,256 @@
+---
+title: 'Rate Limits'
+description: 'Understanding and managing rate limits for ClosedLoop MCP Server'
+---
+
+## 📊 Rate Limits
+
+The ClosedLoop MCP Server implements rate limiting to ensure fair usage and maintain service quality for all users.
+
+## Current Limits
+
+| Limit Type | Value | Description |
+|------------|-------|-------------|
+| **Requests per minute** | 60 | Maximum API calls in a 60-second window |
+| **Requests per hour** | 1,000 | Maximum API calls in a 60-minute window |
+| **Maximum page size** | 100 | Maximum items per page for list operations |
+
+## Rate Limit Headers
+
+The server includes rate limit information in response headers:
+
+```
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1640995200
+```
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed in the current window |
+| `X-RateLimit-Remaining` | Number of requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the rate limit window resets |
+
+## Rate Limit Exceeded Response
+
+When you exceed the rate limit, you'll receive a 429 status code:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "retry_after": 30
+}
+```
+
+The `retry_after` field indicates how many seconds you should wait before making another request.
+
+## Best Practices
+
+### Monitor Rate Limit Usage
+
+```javascript
+// Check rate limit headers
+const response = await mcpClient.callTool('list_feedbacks', { limit: 10 });
+const remaining = response.headers['x-ratelimit-remaining'];
+const resetTime = response.headers['x-ratelimit-reset'];
+
+console.log(`Remaining requests: ${remaining}`);
+console.log(`Reset time: ${new Date(resetTime * 1000)}`);
+```
+
+### Implement Exponential Backoff
+
+```javascript
+async function callWithBackoff(tool, args, maxRetries = 5) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const result = await mcpClient.callTool(tool, args);
+      return result;
+    } catch (error) {
+      if (error.status === 429) {
+        const retryAfter = error.retry_after || Math.pow(2, attempt);
+        console.log(`Rate limited. Retrying after ${retryAfter} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+```
+
+### Cache Results When Appropriate
+
+```javascript
+const cache = new Map();
+
+async function getCachedFeedbacks(dateFrom, dateTo) {
+  const cacheKey = `${dateFrom}-${dateTo}`;
+  
+  if (cache.has(cacheKey)) {
+    const cached = cache.get(cacheKey);
+    if (Date.now() - cached.timestamp < 300000) { // 5 minutes
+      return cached.data;
+    }
+  }
+  
+  const result = await mcpClient.callTool('list_feedbacks', {
+    date_from: dateFrom,
+    date_to: dateTo
+  });
+  
+  cache.set(cacheKey, {
+    data: result,
+    timestamp: Date.now()
+  });
+  
+  return result;
+}
+```
+
+### Use Pagination Efficiently
+
+```javascript
+// Good: Use appropriate page sizes
+async function getAllFeedbacks(dateFrom, dateTo) {
+  const allFeedbacks = [];
+  let page = 1;
+  const limit = 50; // Reasonable page size
+  
+  while (true) {
+    const result = await mcpClient.callTool('list_feedbacks', {
+      date_from: dateFrom,
+      date_to: dateTo,
+      page: page,
+      limit: limit
+    });
+    
+    allFeedbacks.push(...result.data.feedbacks);
+    
+    if (page >= result.data.pagination.pages) {
+      break;
+    }
+    
+    page++;
+    
+    // Add small delay to avoid hitting rate limits
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  return allFeedbacks;
+}
+```
+
+### Batch Operations When Possible
+
+```javascript
+// Good: Batch multiple operations
+async function getMultipleFeedbackDetails(feedbackIds) {
+  const results = await Promise.allSettled(
+    feedbackIds.map(id => 
+      mcpClient.callTool('get_feedback_detail', { feedback_id: id })
+    )
+  );
+  
+  return results
+    .filter(result => result.status === 'fulfilled')
+    .map(result => result.value);
+}
+```
+
+## Rate Limit Monitoring
+
+### Track Your Usage
+
+```javascript
+class RateLimitMonitor {
+  constructor() {
+    this.requests = [];
+  }
+  
+  recordRequest() {
+    const now = Date.now();
+    this.requests.push(now);
+    
+    // Remove requests older than 1 hour
+    this.requests = this.requests.filter(time => now - time < 3600000);
+  }
+  
+  getRemainingRequests() {
+    const now = Date.now();
+    const lastMinute = this.requests.filter(time => now - time < 60000);
+    const lastHour = this.requests.length;
+    
+    return {
+      minute: Math.max(0, 60 - lastMinute.length),
+      hour: Math.max(0, 1000 - lastHour)
+    };
+  }
+  
+  shouldWait() {
+    const remaining = this.getRemainingRequests();
+    return remaining.minute === 0 || remaining.hour === 0;
+  }
+}
+```
+
+### Set Up Alerts
+
+```javascript
+// Monitor rate limit usage and alert when approaching limits
+function setupRateLimitAlerts() {
+  setInterval(() => {
+    const remaining = rateLimitMonitor.getRemainingRequests();
+    
+    if (remaining.minute < 10) {
+      console.warn('⚠️ Approaching minute rate limit');
+    }
+    
+    if (remaining.hour < 100) {
+      console.warn('⚠️ Approaching hour rate limit');
+    }
+  }, 30000); // Check every 30 seconds
+}
+```
+
+## Handling Rate Limit Exceeded
+
+### Immediate Response
+
+1. **Stop making requests** immediately
+2. **Check the `retry_after` value** in the error response
+3. **Wait for the specified time** before retrying
+4. **Implement backoff** for subsequent retries
+
+### Long-term Solutions
+
+1. **Optimize your requests** - reduce unnecessary API calls
+2. **Implement caching** - store results locally when appropriate
+3. **Batch operations** - combine multiple requests when possible
+4. **Monitor usage patterns** - identify peak usage times
+5. **Consider upgrading** - contact support if you need higher limits
+
+## Rate Limit Exceptions
+
+### Emergency Access
+
+For critical production issues, you may request temporary rate limit increases:
+
+- **Contact**: support@closedloop.sh
+- **Include**: Your use case and expected request volume
+- **Response time**: Typically within 24 hours
+
+### Bulk Operations
+
+For large data exports or bulk operations:
+
+- **Contact**: support@closedloop.sh
+- **Request**: Temporary rate limit increase
+- **Provide**: Estimated request volume and timeline
+
+## Related Resources
+
+- **[Error Handling](/mcp-server/error-handling)** - Complete error handling guide
+- **[MCP Tools Reference](/mcp-server/tools)** - Detailed tool documentation
+- **[Integration Guide](/mcp-server/integration)** - Setup and configuration

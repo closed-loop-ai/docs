@@ -278,48 +278,11 @@ Retrieve comprehensive details about a specific feedback item, including full an
 
 ## 🚨 Error Handling
 
-### **Common Error Responses**
-
-#### Invalid API Key
-```json
-{
-  "error": "Invalid API key"
-}
-```
-
-#### Missing Required Parameter
-```json
-{
-  "error": "Invalid arguments: \"feedback_id\" is required"
-}
-```
-
-#### Feedback Not Found
-```json
-{
-  "error": "Feedback not found or access denied"
-}
-```
-
-#### Rate Limiting
-```json
-{
-  "error": "Rate limit exceeded"
-}
-```
-
-#### Invalid Date Format
-```json
-{
-  "error": "Invalid date format. Use YYYY-MM-DD"
-}
-```
+For comprehensive error handling information, see the [Error Handling Guide](/mcp-server/error-handling).
 
 ## 📊 Rate Limits
 
-- **Requests per minute**: 60
-- **Requests per hour**: 1,000
-- **Maximum page size**: 100 items
+For detailed rate limit information and best practices, see the [Rate Limits Guide](/mcp-server/rate-limits).
 
 ## 💡 Best Practices
 
@@ -328,10 +291,6 @@ Retrieve comprehensive details about a specific feedback item, including full an
 - Start with smaller page sizes for testing
 - Use `get_feedback_detail` only when you need the full analysis
 
-### **Error Handling**
-- Always check for error responses
-- Handle rate limiting gracefully
-- Validate feedback IDs before calling `get_feedback_detail`
 
 ### **Performance Optimization**
 - Cache results when appropriate

@@ -1,0 +1,195 @@
+---
+title: 'Error Handling'
+description: 'Complete guide to handling errors in ClosedLoop MCP Server'
+---
+
+## 🚨 Error Handling
+
+The ClosedLoop MCP Server provides comprehensive error handling to help you diagnose and resolve issues quickly.
+
+## Common Error Responses
+
+### Invalid API Key
+```json
+{
+  "error": "Invalid API key"
+}
+```
+
+**Cause**: The provided API key is invalid, expired, or doesn't exist.
+
+**Solution**: 
+- Verify your API key is correct
+- Check if the API key has been revoked
+- Generate a new API key from the ClosedLoop dashboard
+
+### Missing Required Parameter
+```json
+{
+  "error": "Invalid arguments: \"feedback_id\" is required"
+}
+```
+
+**Cause**: A required parameter is missing from the request.
+
+**Solution**:
+- Check that all required parameters are included
+- Verify parameter names are spelled correctly
+- Refer to the tool documentation for required parameters
+
+### Feedback Not Found
+```json
+{
+  "error": "Feedback not found or access denied"
+}
+```
+
+**Cause**: The requested feedback item doesn't exist or you don't have access to it.
+
+**Solution**:
+- Verify the feedback ID is correct
+- Check if the feedback belongs to your team
+- Ensure the feedback hasn't been deleted
+
+### Rate Limiting
+```json
+{
+  "error": "Rate limit exceeded"
+}
+```
+
+**Cause**: You've exceeded the allowed number of requests.
+
+**Solution**:
+- Wait before making additional requests
+- Implement exponential backoff
+- Consider caching results to reduce API calls
+
+### Invalid Date Format
+```json
+{
+  "error": "Invalid date format. Use YYYY-MM-DD"
+}
+```
+
+**Cause**: Date parameters are not in the correct format.
+
+**Solution**:
+- Use YYYY-MM-DD format for all dates
+- Ensure dates are valid calendar dates
+- Check for typos in date strings
+
+### Connection Errors
+
+#### Failed to Connect to MCP Server
+**Error**: `Failed to connect to MCP server`
+
+**Cause**: Network connectivity issues or server unavailability.
+
+**Solution**:
+- Check your internet connection
+- Verify the server URL is correct
+- Check if the MCP server is running
+
+#### Empty Results
+**Error**: Empty results or no feedback found
+
+**Cause**: No feedback matches your criteria.
+
+**Solution**:
+- Expand your date range
+- Check your filtering parameters
+- Verify you have feedback data in the system
+
+## Error Handling Best Practices
+
+### Always Check for Error Responses
+```javascript
+// Good: Check for errors
+const result = await mcpClient.callTool('list_feedbacks', { limit: 10 });
+if (result.error) {
+  console.error('Error:', result.error);
+  return;
+}
+// Process successful result
+```
+
+### Handle Rate Limiting Gracefully
+```javascript
+// Good: Implement retry with backoff
+async function callWithRetry(tool, args, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const result = await mcpClient.callTool(tool, args);
+      if (result.error && result.error.includes('Rate limit')) {
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        continue;
+      }
+      return result;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+```
+
+### Validate Input Parameters
+```javascript
+// Good: Validate before making requests
+function validateFeedbackId(feedbackId) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(feedbackId)) {
+    throw new Error('Invalid feedback ID format');
+  }
+}
+```
+
+### Log Errors for Debugging
+```javascript
+// Good: Comprehensive error logging
+try {
+  const result = await mcpClient.callTool('get_feedback_detail', { feedback_id });
+  return result;
+} catch (error) {
+  console.error('MCP Error:', {
+    tool: 'get_feedback_detail',
+    args: { feedback_id },
+    error: error.message,
+    timestamp: new Date().toISOString()
+  });
+  throw error;
+}
+```
+
+## Troubleshooting Guide
+
+### Common Issues
+
+1. **Authentication Problems**
+   - Verify API key is correctly set in environment variables
+   - Check API key permissions and team access
+   - Ensure API key hasn't expired
+
+2. **Network Issues**
+   - Test connectivity to `https://mcp.closedloop.sh`
+   - Check firewall settings
+   - Verify DNS resolution
+
+3. **Data Access Issues**
+   - Confirm you have access to the requested data
+   - Check if feedback exists in your team's data
+   - Verify date ranges are reasonable
+
+4. **Performance Issues**
+   - Monitor rate limit usage
+   - Implement proper caching
+   - Use pagination for large datasets
+
+### Getting Help
+
+If you continue to experience issues:
+
+- **Technical Support**: support@closedloop.sh
+- **Health Check**: https://mcp.closedloop.sh/health
+- **Documentation**: Check the [MCP Tools Reference](/mcp-server/tools) for detailed parameter information
